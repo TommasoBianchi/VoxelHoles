@@ -13,12 +13,13 @@ public class MeshData
     private Dictionary<Vector3, int> vertexToIndexDictionary;
     private bool normalsReady = false;
 
-    public MeshData()
+    public MeshData() : this(new List<Vector3>(), new List<int>(), new List<Vector2>(), new List<Vector3>()) { }
+    public MeshData(List<Vector3> vertices, List<int> triangles, List<Vector2> uv, List<Vector3> normals)
     {
-        this.vertices = new List<Vector3>();
-        this.triangles = new List<int>();
-        this.uv = new List<Vector2>();
-        this.normals = new List<Vector3>();
+        this.vertices = vertices;
+        this.triangles = triangles;
+        this.uv = uv;
+        this.normals = normals;
 
         this.vertexToIndexDictionary = new Dictionary<Vector3, int>();
     }
@@ -99,5 +100,67 @@ public class MeshData
         }
 
         return mesh;
+    }
+
+    // TODO: needs to be refactored somewhere else
+    // TODO: this way it produces only garbage. Think of a better way to do it or use marching cubes
+    public void Smooth()
+    {
+        Vector3[] directions = new Vector3[]
+        {
+            new Vector3(1, 0, 0),
+            new Vector3(-1, 0, 0),
+            new Vector3(0, 1, 0),
+            new Vector3(0, -1, 0),
+            new Vector3(0, 0, 1),
+            new Vector3(0, 0, -1),
+
+            new Vector3(1, 1, 0),
+            new Vector3(0, 1, 1),
+            new Vector3(1, 1, 1),
+            new Vector3(-1, 1, 0),
+            new Vector3(0, 1, -1),
+            new Vector3(-1, 1, 1),
+            new Vector3(1, 1, -1),
+            new Vector3(-1, 1, -1),
+
+            new Vector3(1, -1, 0),
+            new Vector3(0, -1, 1),
+            new Vector3(1, -1, 1),
+            new Vector3(-1, -1, 0),
+            new Vector3(0, -1, -1),
+            new Vector3(-1, -1, 1),
+            new Vector3(1, -1, -1),
+            new Vector3(-1, -1, -1),
+
+            new Vector3(1, 0, 1),
+            new Vector3(1, 0, -1),
+            new Vector3(-1, 0, 1),
+            new Vector3(-1, 0, -1)
+        };
+
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            Vector3 displacement = Vector3.zero;
+            int neighbourCount = 0;
+
+            for (int j = 0; j < directions.Length; j++)
+            {
+                Vector3 p = vertices[i] + directions[j];
+
+                if (vertexToIndexDictionary.ContainsKey(p))
+                {
+                    displacement += (p - vertices[i]);
+                    neighbourCount++;
+                }
+            }
+
+            displacement.Normalize();
+            float smoothFactor = Mathf.Lerp(-1f, 1f, (1 - neighbourCount / (float)directions.Length));
+
+            //Debug.Log("Smoothing vertex at " + vertices[i] + " wich has " + neighbourCount + " neighbours and a displacement of " + displacement);
+
+            vertices[i] += displacement * smoothFactor;
+        }
     }
 }

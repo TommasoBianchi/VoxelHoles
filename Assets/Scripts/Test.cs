@@ -5,6 +5,11 @@ using UnityEngine;
 
 public class Test : MonoBehaviour {
 
+    public int width = 32;
+    public int height = 32;
+    public int holesAmount = 20;
+    public int lateralBias = 4;
+
     public GameObject voxelPrefab;
     public Material voxelMaterial;
 
@@ -13,7 +18,7 @@ public class Test : MonoBehaviour {
     private System.Random prng = new System.Random();
     
 	void Start () {
-        voxelMap = new VoxelMap(16, 16);
+        voxelMap = new VoxelMap(width, height);
 
         ThreadWorkManager.RequestWork(() =>
         {
@@ -31,7 +36,7 @@ public class Test : MonoBehaviour {
         //    GenerateHoleInMap(center, radius);
         //}
 
-        GenerateHoles(10);
+        GenerateHoles(holesAmount);
 
         //GenerateIrregularCaveInMap(new Vector3Int(4, 4, 4), 1200);
     }
@@ -97,18 +102,23 @@ public class Test : MonoBehaviour {
     {
         List<Vector3Int> points = new List<Vector3Int>();
         points.Add(center);
+        bool hasReachedSurface = false;
 
-        for (int i = 0; i < size && points.Count > 0; i++)
+        for (int i = 0; (i < size || !hasReachedSurface) && points.Count > 0; i++)
         {
             int randIndex = prng.Next(0, points.Count);
             Vector3Int pointToRemove = points[randIndex];
 
-            Vector3Int[] neighbours = GetNeighbouringPoints(pointToRemove, 2);
+            Vector3Int[] neighbours = GetNeighbouringPoints(pointToRemove, lateralBias);
             for (int j = 0; j < neighbours.Length; j++)
             {
                 if (voxelMap.CheckVoxelAt(neighbours[j]))
                 {
                     points.Add(neighbours[j]);
+                }
+                else
+                {
+                    hasReachedSurface = hasReachedSurface || !voxelMap.IsInside(neighbours[j]);
                 }
             }
 
@@ -120,7 +130,8 @@ public class Test : MonoBehaviour {
     {
         for (int i = 0; i < amount; i++)
         {
-            Vector3Int center = new Vector3Int(prng.Next(0, 16), prng.Next(0, 16), prng.Next(0, 64));
+            Debug.Log("GenerateIrregularCaveInMap " + i);
+            Vector3Int center = new Vector3Int(prng.Next(0, voxelMap.Width), prng.Next(0, voxelMap.Height), prng.Next(0, voxelMap.Depth));
             int size = prng.Next(400, 1600);
             GenerateIrregularCaveInMap(center, size);
         }
@@ -140,6 +151,7 @@ public class Test : MonoBehaviour {
             new Vector3Int(0, 0, -1)
         };
 
+        // Invert y and z for visualization purposes
         voxelMap.Foreach((x, y, z, voxelPresent) =>
         {
             if (voxelPresent)
@@ -163,6 +175,55 @@ public class Test : MonoBehaviour {
             GameObject go = new GameObject();
             go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
             go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
+
+            /*MeshData m = new MeshData();
+
+            //CreateSquare(new Vector3Int(100, 100, 100), m, new Vector3Int(1, 0, 0));
+            CreateSquare(new Vector3Int(100, 100, 100), m, new Vector3Int(-1, 0, 0));
+            CreateSquare(new Vector3Int(100, 100, 100), m, new Vector3Int(0, 1, 0));
+            CreateSquare(new Vector3Int(100, 100, 100), m, new Vector3Int(0, -1, 0));
+            //CreateSquare(new Vector3Int(100, 100, 100), m, new Vector3Int(0, 0, 1));
+            CreateSquare(new Vector3Int(100, 100, 100), m, new Vector3Int(0, 0, -1));
+
+            CreateSquare(new Vector3Int(101, 100, 100), m, new Vector3Int(1, 0, 0));
+            //CreateSquare(new Vector3Int(101, 100, 100), m, new Vector3Int(-1, 0, 0));
+            //CreateSquare(new Vector3Int(101, 100, 100), m, new Vector3Int(0, 1, 0));
+            CreateSquare(new Vector3Int(101, 100, 100), m, new Vector3Int(0, -1, 0));
+            //CreateSquare(new Vector3Int(101, 100, 100), m, new Vector3Int(0, 0, 1));
+            CreateSquare(new Vector3Int(101, 100, 100), m, new Vector3Int(0, 0, -1));
+
+            CreateSquare(new Vector3Int(101, 101, 100), m, new Vector3Int(1, 0, 0));
+            CreateSquare(new Vector3Int(101, 101, 100), m, new Vector3Int(-1, 0, 0));
+            CreateSquare(new Vector3Int(101, 101, 100), m, new Vector3Int(0, 1, 0));
+            //CreateSquare(new Vector3Int(101, 101, 100), m, new Vector3Int(0, -1, 0));
+            //CreateSquare(new Vector3Int(101, 101, 100), m, new Vector3Int(0, 0, 1));
+            CreateSquare(new Vector3Int(101, 101, 100), m, new Vector3Int(0, 0, -1));
+
+            //CreateSquare(new Vector3Int(100, 100, 100), m, new Vector3Int(1, 0, 0));
+            CreateSquare(new Vector3Int(100, 100, 101), m, new Vector3Int(-1, 0, 0));
+            CreateSquare(new Vector3Int(100, 100, 101), m, new Vector3Int(0, 1, 0));
+            CreateSquare(new Vector3Int(100, 100, 101), m, new Vector3Int(0, -1, 0));
+            CreateSquare(new Vector3Int(100, 100, 101), m, new Vector3Int(0, 0, 1));
+            //CreateSquare(new Vector3Int(100, 100, 101), m, new Vector3Int(0, 0, -1));
+
+            CreateSquare(new Vector3Int(101, 100, 101), m, new Vector3Int(1, 0, 0));
+            //CreateSquare(new Vector3Int(101, 100, 100), m, new Vector3Int(-1, 0, 0));
+            //CreateSquare(new Vector3Int(101, 100, 100), m, new Vector3Int(0, 1, 0));
+            CreateSquare(new Vector3Int(101, 100, 101), m, new Vector3Int(0, -1, 0));
+            CreateSquare(new Vector3Int(101, 100, 101), m, new Vector3Int(0, 0, 1));
+            //CreateSquare(new Vector3Int(101, 100, 101), m, new Vector3Int(0, 0, -1));
+
+            CreateSquare(new Vector3Int(101, 101, 101), m, new Vector3Int(1, 0, 0));
+            CreateSquare(new Vector3Int(101, 101, 101), m, new Vector3Int(-1, 0, 0));
+            CreateSquare(new Vector3Int(101, 101, 101), m, new Vector3Int(0, 1, 0));
+            //CreateSquare(new Vector3Int(101, 101, 100), m, new Vector3Int(0, -1, 0));
+            CreateSquare(new Vector3Int(101, 101, 101), m, new Vector3Int(0, 0, 1));
+            //CreateSquare(new Vector3Int(101, 101, 101), m, new Vector3Int(0, 0, -1));
+
+            m.Smooth();
+            go = new GameObject();
+            go.AddComponent<MeshFilter>().mesh = m.ToMesh();
+            go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;*/
         });
     }
 
