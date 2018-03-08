@@ -103,7 +103,7 @@ public class Test : MonoBehaviour {
             int randIndex = prng.Next(0, points.Count);
             Vector3Int pointToRemove = points[randIndex];
 
-            Vector3Int[] neighbours = GetNeighbouringPoints(pointToRemove);
+            Vector3Int[] neighbours = GetNeighbouringPoints(pointToRemove, 2);
             for (int j = 0; j < neighbours.Length; j++)
             {
                 if (voxelMap.CheckVoxelAt(neighbours[j]))
@@ -156,6 +156,8 @@ public class Test : MonoBehaviour {
             }
         });
 
+        meshData.CalculateNormals();
+
         ThreadWorkManager.RequestMainThreadWork(() =>
         {
             GameObject go = new GameObject();
@@ -176,15 +178,21 @@ public class Test : MonoBehaviour {
         meshData.AddTriangle(a, c, d);
     }
 
-    Vector3Int[] GetNeighbouringPoints(Vector3Int p)
+    Vector3Int[] GetNeighbouringPoints(Vector3Int p, int lateralBias = 0, bool includeDown = false)
     {
-        Vector3Int[] res = new Vector3Int[5];
-        res[0] = p + Vector3Int.right;
-        res[1] = p - Vector3Int.right;
-        res[2] = p + Vector3Int.up;
-        //res[3] = p - Vector3Int.up;
-        res[3] = p + new Vector3Int(0, 0, 1);
-        res[4] = p - new Vector3Int(0, 0, 1);
-        return res;
+        List<Vector3Int> res = new List<Vector3Int>();
+
+        for (int i = 0; i < lateralBias + 1; i++)
+        {
+            res.Add(p + Vector3Int.right);
+            res.Add(p - Vector3Int.right);
+            res.Add(p + new Vector3Int(0, 0, 1));
+            res.Add(p - new Vector3Int(0, 0, 1));
+        }        
+
+        res.Add(p + Vector3Int.up);
+        if(includeDown)
+            res.Add(p - Vector3Int.up);
+        return res.ToArray();
     }
 }
