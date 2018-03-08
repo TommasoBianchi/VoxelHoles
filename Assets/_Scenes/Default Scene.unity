@@ -221,6 +221,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   voxelPrefab: {fileID: 1464798291838190, guid: fefedd0384e86b045b65c51ce2048f49,
     type: 2}
+  voxelMaterial: {fileID: 2100000, guid: e3d6e46a6c4b91e4fa4453d4c8946e79, type: 2}
 --- !u!4 &1402817019
 Transform:
   m_ObjectHideFlags: 0

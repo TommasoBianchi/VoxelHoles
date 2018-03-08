@@ -6,6 +6,7 @@ using UnityEngine;
 public class Test : MonoBehaviour {
 
     public GameObject voxelPrefab;
+    public Material voxelMaterial;
 
     private VoxelMap voxelMap;
     
@@ -110,27 +111,61 @@ public class Test : MonoBehaviour {
         }
     }
 
-    IEnumerator GenerateHoles(int amount)
+    void GenerateHoles(int amount)
     {
         for (int i = 0; i < amount; i++)
         {
             Vector3Int center = new Vector3Int(Random.Range(0, 16), Random.Range(0, 16), Random.Range(0, 64));
             int size = Random.Range(400, 1600);
             GenerateIrregularCaveInMap(center, size);
-            yield return null;
         }
     }
 
     void SpawnMap()
     {
-        StartCoroutine(voxelMap.ForeachForCoroutines((x, y, z, voxelPresent) =>
+        MeshData meshData = new MeshData();
+
+        Vector3Int[] directions = new Vector3Int[]
+        {
+            new Vector3Int(1, 0, 0),
+            new Vector3Int(-1, 0, 0),
+            new Vector3Int(0, 1, 0),
+            new Vector3Int(0, -1, 0),
+            new Vector3Int(0, 0, 1),
+            new Vector3Int(0, 0, -1)
+        };
+
+        voxelMap.Foreach((x, y, z, voxelPresent) =>
         {
             if (voxelPresent)
             {
-                // TODO: replace with some actual mesh work
-                Instantiate(voxelPrefab, new Vector3(x, y, z), Quaternion.identity, transform);
+                //Instantiate(voxelPrefab, new Vector3(x, y, z), Quaternion.identity, transform);
+
+                for (int i = 0; i < directions.Length; i++)
+                {
+                    if (voxelMap.CheckVoxelAt(x + directions[i].x, y + directions[i].y, z + directions[i].z) == false)
+                    {
+                        CreateSquare(new Vector3Int(x, y, z), meshData, directions[i]);
+                    }
+                }
             }
-        }));
+        });
+
+        GameObject go = new GameObject();
+        go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
+        go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
+    }
+
+    void CreateSquare(Vector3Int voxelCenter, MeshData meshData, Vector3Int normal)
+    {
+        Quaternion rotation = Quaternion.FromToRotation(new Vector3Int(0, 1, 0), normal);
+        Vector3 a = rotation * new Vector3(0.5f, 0, 0.5f) + voxelCenter + (Vector3)normal * 0.5f;
+        Vector3 b = rotation * new Vector3(0.5f, 0, -0.5f) + voxelCenter + (Vector3)normal * 0.5f;
+        Vector3 c = rotation * new Vector3(-0.5f, 0, -0.5f) + voxelCenter + (Vector3)normal * 0.5f;
+        Vector3 d = rotation * new Vector3(-0.5f, 0, 0.5f) + voxelCenter + (Vector3)normal * 0.5f;
+
+        meshData.AddTriangle(a, b, c);
+        meshData.AddTriangle(a, c, d);
     }
 
     Vector3Int[] GetNeighbouringPoints(Vector3Int p)
