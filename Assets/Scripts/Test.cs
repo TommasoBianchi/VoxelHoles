@@ -9,13 +9,18 @@ public class Test : MonoBehaviour {
     public Material voxelMaterial;
 
     private VoxelMap voxelMap;
+
+    private System.Random prng = new System.Random();
     
 	void Start () {
         voxelMap = new VoxelMap(16, 16);
 
-        GenerateMap();
+        ThreadWorkManager.RequestWork(() =>
+        {
+            GenerateMap();
 
-        SpawnMap();
+            SpawnMap();
+        });
 	}
 	
 	void GenerateMap () {
@@ -95,7 +100,7 @@ public class Test : MonoBehaviour {
 
         for (int i = 0; i < size && points.Count > 0; i++)
         {
-            int randIndex = Random.Range(0, points.Count);
+            int randIndex = prng.Next(0, points.Count);
             Vector3Int pointToRemove = points[randIndex];
 
             Vector3Int[] neighbours = GetNeighbouringPoints(pointToRemove);
@@ -115,8 +120,8 @@ public class Test : MonoBehaviour {
     {
         for (int i = 0; i < amount; i++)
         {
-            Vector3Int center = new Vector3Int(Random.Range(0, 16), Random.Range(0, 16), Random.Range(0, 64));
-            int size = Random.Range(400, 1600);
+            Vector3Int center = new Vector3Int(prng.Next(0, 16), prng.Next(0, 16), prng.Next(0, 64));
+            int size = prng.Next(400, 1600);
             GenerateIrregularCaveInMap(center, size);
         }
     }
@@ -151,9 +156,12 @@ public class Test : MonoBehaviour {
             }
         });
 
-        GameObject go = new GameObject();
-        go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
-        go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
+        ThreadWorkManager.RequestMainThreadWork(() =>
+        {
+            GameObject go = new GameObject();
+            go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
+            go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
+        });
     }
 
     void CreateSquare(Vector3Int voxelCenter, MeshData meshData, Vector3Int normal)
