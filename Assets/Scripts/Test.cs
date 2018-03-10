@@ -20,6 +20,15 @@ public class Test : MonoBehaviour {
 	void Start () {
         voxelMap = new VoxelMap(width, height);
 
+        // Test sphere for the Marching Cubes
+        MeshData meshData = MarchingCubes.Poligonyze(new Bounds(Vector3.zero, Vector3.one * 10), 
+            (x, y, z) => 10 / ((x * x + y * y + z * z) * (x * x + y * y + z * z)), Vector3.one / 5, 0.5f);
+        GameObject go = new GameObject();
+        go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
+        go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
+
+        return;
+
         ThreadWorkManager.RequestWork(() =>
         {
             GenerateMap();
