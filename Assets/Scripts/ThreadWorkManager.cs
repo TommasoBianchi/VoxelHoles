@@ -31,12 +31,14 @@ public class ThreadWorkManager
 
     protected static void Update()
     {
-        lock (actions)
+        if (actions.Count > 0)
         {
-            if (actions.Count > 0)
+            Action work = () => { };
+            lock (actions)
             {
-                actions.Dequeue().Invoke();
+                work = actions.Dequeue();
             }
+            work.Invoke();
         }
     }
 

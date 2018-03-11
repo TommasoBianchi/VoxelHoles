@@ -20,20 +20,12 @@ public class Test : MonoBehaviour {
 	void Start () {
         voxelMap = new VoxelMap(width, height);
 
-        // Test sphere for the Marching Cubes
-        MeshData meshData = MarchingCubes.Poligonyze(new Bounds(Vector3.zero, Vector3.one * 10), 
-            (x, y, z) => 10 / ((x * x + y * y + z * z) * (x * x + y * y + z * z)), Vector3.one / 5, 0.5f);
-        GameObject go = new GameObject();
-        go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
-        go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
-
-        return;
-
         ThreadWorkManager.RequestWork(() =>
         {
             GenerateMap();
 
             SpawnMap();
+            SpawnMarchingMap();
         });
 	}
 	
@@ -110,6 +102,7 @@ public class Test : MonoBehaviour {
     void GenerateIrregularCaveInMap(Vector3Int center, int size)
     {
         List<Vector3Int> points = new List<Vector3Int>();
+        HashSet<Vector3Int> removedPoints = new HashSet<Vector3Int>();
         points.Add(center);
         bool hasReachedSurface = false;
 
@@ -117,6 +110,7 @@ public class Test : MonoBehaviour {
         {
             int randIndex = prng.Next(0, points.Count);
             Vector3Int pointToRemove = points[randIndex];
+            removedPoints.Add(pointToRemove);
 
             Vector3Int[] neighbours = GetNeighbouringPoints(pointToRemove, lateralBias);
             for (int j = 0; j < neighbours.Length; j++)
@@ -127,7 +121,7 @@ public class Test : MonoBehaviour {
                 }
                 else
                 {
-                    hasReachedSurface = hasReachedSurface || !voxelMap.IsInside(neighbours[j]);
+                    hasReachedSurface = hasReachedSurface || !removedPoints.Contains(neighbours[j]);
                 }
             }
 
@@ -141,9 +135,22 @@ public class Test : MonoBehaviour {
         {
             Debug.Log("GenerateIrregularCaveInMap " + i);
             Vector3Int center = new Vector3Int(prng.Next(0, voxelMap.Width), prng.Next(0, voxelMap.Height), prng.Next(0, voxelMap.Depth));
-            int size = prng.Next(400, 1600);
+            int size = prng.Next(2000, 8000);
             GenerateIrregularCaveInMap(center, size);
         }
+    }
+
+    void SpawnMarchingMap()
+    {
+        MeshData meshData = MarchingCubes.Poligonyze(new PolygonizableVoxelMap(voxelMap), Vector3.one * 2, 0.5f);
+        Debug.Log("Finished MarchingCubes.Poligonyze");
+
+        ThreadWorkManager.RequestMainThreadWork(() =>
+        {
+            GameObject go = new GameObject();
+            go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
+            go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
+        });
     }
 
     void SpawnMap()
