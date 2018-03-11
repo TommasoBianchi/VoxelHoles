@@ -23,14 +23,11 @@ public static class MarchingCubes {
 
     public interface IPoligonyzable
     {
-        Bounds bounds { get; }
         float Sample(float x, float y, float z);
     }
 
     private class PoligonyzableSource : IPoligonyzable
     {
-        public Bounds bounds { get; private set; }
-
         private Func<float, float, float, float> sampleFunc;
 
         public float Sample(float x, float y, float z)
@@ -38,29 +35,28 @@ public static class MarchingCubes {
             return sampleFunc(x, y, z);
         }
 
-        public PoligonyzableSource(Bounds bounds, Func<float, float, float, float> sampleFunc)
+        public PoligonyzableSource(Func<float, float, float, float> sampleFunc)
         {
-            this.bounds = bounds;
             this.sampleFunc = sampleFunc;
         }
     }
 
     public static MeshData Poligonyze(Bounds sourceBounds, Func<float, float, float, float> sampleSourceFunc, Vector3 resolution, float isolevel)
     {
-        return Poligonyze(new PoligonyzableSource(sourceBounds, sampleSourceFunc), resolution, isolevel);
+        return Poligonyze(new PoligonyzableSource(sampleSourceFunc), sourceBounds, resolution, isolevel);
     }
 
-    public static MeshData Poligonyze(IPoligonyzable source, Vector3 resolution, float isolevel)
+    public static MeshData Poligonyze(IPoligonyzable source, Bounds bounds, Vector3 resolution, float isolevel)
     {
         MeshData meshData = new MeshData();
 
         Grid[] grid = new Grid[8];
 
-        for (float x = source.bounds.min.x ; x <= source.bounds.max.x - resolution.x; x += resolution.x)
+        for (float x = bounds.min.x ; x <= bounds.max.x - resolution.x; x += resolution.x)
         {
-            for (float y = source.bounds.min.y; y <= source.bounds.max.y - resolution.y; y += resolution.y)
+            for (float y = bounds.min.y; y <= bounds.max.y - resolution.y; y += resolution.y)
             {
-                for (float z = source.bounds.min.z; z <= source.bounds.max.z - resolution.z; z += resolution.z)
+                for (float z = bounds.min.z; z <= bounds.max.z - resolution.z; z += resolution.z)
                 {
                     // The weird array indices are due to how the lookup arrays are made
                     grid[3] = new Grid(x, y, z, 

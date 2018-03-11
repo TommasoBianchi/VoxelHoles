@@ -121,35 +121,73 @@ public class Test : MonoBehaviour {
                 }
                 else
                 {
-                    hasReachedSurface = hasReachedSurface || !removedPoints.Contains(neighbours[j]);
+                    hasReachedSurface = true;
+                    //hasReachedSurface = hasReachedSurface ||
+                    //    (!removedPoints.Contains(neighbours[j]) && voxelMap.IsInside(neighbours[j])) ||
+                    //    neighbours[j].z < 0;
+                    //Debug.Log("hasReachedSurface = " + hasReachedSurface + " neighbours[j] = " + neighbours[j]);
                 }
             }
 
             voxelMap.ModifyVoxelAt(pointToRemove.x, pointToRemove.y, pointToRemove.z, false);
         }
+
+        // TODO: Generate tunnel to connect holes, do not use hasReachedSurface anymore
     }
 
     void GenerateHoles(int amount)
     {
+        SimplePriorityQueue<KeyValuePair<Vector3Int, int>, int> holesData = new SimplePriorityQueue<KeyValuePair<Vector3Int, int>, int>();
+
         for (int i = 0; i < amount; i++)
         {
-            Debug.Log("GenerateIrregularCaveInMap " + i);
-            Vector3Int center = new Vector3Int(prng.Next(0, voxelMap.Width), prng.Next(0, voxelMap.Height), prng.Next(0, voxelMap.Depth));
-            int size = prng.Next(2000, 8000);
-            GenerateIrregularCaveInMap(center, size);
+            Vector3Int center = new Vector3Int(prng.Next(0, voxelMap.Width),
+                                               prng.Next(0, voxelMap.Height),
+                                               prng.Next(i * voxelMap.Depth / amount, (i + 1) * voxelMap.Depth / amount));
+            int size = prng.Next(8000, 16000);
+            holesData.Enqueue(new KeyValuePair<Vector3Int, int>(center, size), center.z);
+        }
+
+        // TODO: parallelyze work here (and take care of thread safety of voxelMap)
+
+        while (holesData.Count > 0)
+        {
+            KeyValuePair<Vector3Int, int> data = holesData.Dequeue();
+            Debug.Log("Generating cave at " + data.Key);
+            GenerateIrregularCaveInMap(data.Key, data.Value);
         }
     }
 
     void SpawnMarchingMap()
     {
-        MeshData meshData = MarchingCubes.Poligonyze(new PolygonizableVoxelMap(voxelMap), Vector3.one * 2, 0.5f);
-        Debug.Log("Finished MarchingCubes.Poligonyze");
+        Vector3Int size = new Vector3Int(Mathf.Min(32, voxelMap.Width),
+                                         Mathf.Min(32, voxelMap.Height),
+                                         Mathf.Min(32, voxelMap.Depth));
+
+        for (int x = size.x / 2; x <= voxelMap.Width - size.x / 2; x += size.x)
+        {
+            for (int y = size.y / 2; y <= voxelMap.Height - size.y / 2; y += size.y)
+            {
+                for (int z = size.z / 2; z <= voxelMap.Depth - size.z / 2; z += size.z)
+                {
+                    Vector3Int center = new Vector3Int(x, y, z);
+                    ThreadWorkManager.RequestWork(() => SpawnMarchingMapChunk(center, size));
+                }
+            }
+        }
+    }
+
+    void SpawnMarchingMapChunk(Vector3Int center, Vector3Int size)
+    {
+        MeshData meshData = MarchingCubes.Poligonyze(new PolygonizableVoxelMap(voxelMap), new Bounds(center, size), Vector3.one * 2, 0.5f);
+        //Debug.Log("Finished MarchingCubes.Poligonyze at " + center);
 
         ThreadWorkManager.RequestMainThreadWork(() =>
         {
             GameObject go = new GameObject();
             go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
             go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
+            go.transform.rotation = Quaternion.Euler(-90, 0, 0);
         });
     }
 
@@ -191,6 +229,7 @@ public class Test : MonoBehaviour {
             GameObject go = new GameObject();
             go.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
             go.AddComponent<MeshRenderer>().sharedMaterial = voxelMaterial;
+            go.transform.rotation = Quaternion.Euler(-90, 0, 0);
 
             /*MeshData m = new MeshData();
 
@@ -263,13 +302,13 @@ public class Test : MonoBehaviour {
         {
             res.Add(p + Vector3Int.right);
             res.Add(p - Vector3Int.right);
-            res.Add(p + new Vector3Int(0, 0, 1));
-            res.Add(p - new Vector3Int(0, 0, 1));
-        }        
-
-        res.Add(p + Vector3Int.up);
-        if(includeDown)
+            res.Add(p + Vector3Int.up);
             res.Add(p - Vector3Int.up);
+        }
+
+        res.Add(p - new Vector3Int(0, 0, 1));
+        if(includeDown)
+            res.Add(p + new Vector3Int(0, 0, 1));
         return res.ToArray();
     }
 }

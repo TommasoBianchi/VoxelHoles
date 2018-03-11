@@ -2,17 +2,13 @@
 using UnityEngine;
 
 public class PolygonizableVoxelMap : MarchingCubes.IPoligonyzable
-{
-    public Bounds bounds { get; private set; }
-    
+{    
     private float[,,] fieldValues;
     private VoxelMap voxelMap;
 
     public PolygonizableVoxelMap(VoxelMap voxelMap)
     {
         this.voxelMap = voxelMap;
-        Vector3 size = new Vector3(voxelMap.Width, voxelMap.Height, voxelMap.Depth);
-        this.bounds = new Bounds(size / 2, size);
         this.fieldValues = new float[voxelMap.Width, voxelMap.Height, voxelMap.Depth];
 
         for (int x = 0; x < voxelMap.Width; x++)
