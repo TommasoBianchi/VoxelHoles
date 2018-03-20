@@ -26,7 +26,8 @@ public class TerrainMaster : MonoBehaviour {
             {
                 GenerateChunk(new Vector3(chunkSize.x * x, 0, chunkSize.z * z));
             }
-        }        
+        }
+        //GenerateChunk(Vector3.zero);
 	}
 	
 	void Update ()
@@ -91,6 +92,14 @@ public class TerrainMaster : MonoBehaviour {
 
         private float Sample(float x, float y, float z)
         {
+            if (y <= 0)
+                return SampleSimplex(x, y, z);
+            else
+                return SamplePerlin(x, y, z);
+        }
+
+        private float SampleSimplex(float x, float y, float z)
+        {
             float[] frequencies = { 0.01f };
             float[] amplitudes = { 1, 0.5f, 0.25f };
             float point = 0;
@@ -100,7 +109,31 @@ public class TerrainMaster : MonoBehaviour {
                 point += Noise.CalcPixel3D(x * frequencies[i], y * frequencies[i] * terrainMaster.horizontalness, z * frequencies[i]) * amplitudes[i];
             }
 
-            return ((y - center.y + terrainMaster.chunkSize.y / 2) < terrainMaster.chunkSize.y * terrainMaster.soilToAirVerticalRatio) ? point : -1;
+            //return ((y - center.y + terrainMaster.chunkSize.y / 2) < terrainMaster.chunkSize.y * terrainMaster.soilToAirVerticalRatio) ? point : -1;
+            return point;
+        }
+
+        private float SamplePerlin(float x, float y, float z)
+        {
+            float f = 0.008f;
+            float value = (Noise.CalcPixel3D(x * f, 0, z * f) + 1) / 2f; // Put in range [0, 1]
+            value = value * value;
+            float heightTreshold = terrainMaster.chunkSize.y / 2 * value;
+            // Make sure heightTreshold is always at least a "tick" below the last computed point
+            heightTreshold = Mathf.Min(heightTreshold, terrainMaster.chunkSize.y / 2 - terrainMaster.resolution.y - 1);
+            if (y > heightTreshold)
+            {
+                float t = 1 - Mathf.InverseLerp(heightTreshold, terrainMaster.chunkSize.y, y);
+                return -(1 - t * t * t * t);
+                //return Mathf.Lerp(0, -1, (y - heightTreshold) / (terrainMaster.chunkSize.y - heightTreshold));
+            }
+            else
+            {
+                float t = Mathf.InverseLerp(0, heightTreshold, y);
+                return 1 - t * t * t * t;
+                //return Mathf.Lerp(1, 0, (heightTreshold - y) / (heightTreshold));
+            }
+            //return (y > terrainMaster.chunkSize.y / 2 * value) ? -1 : 1;
         }
     }
 }

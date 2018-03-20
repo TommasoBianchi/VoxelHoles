@@ -55,6 +55,13 @@ namespace Simplex
         }
 
         // Added by Tommaso Bianchi
+        /// <summary>
+        /// Generate a random value in the range (-1, 1) using the 3D Simplex algorithm
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns>float in range (-1, 1)</returns>
         public static float CalcPixel3D(float x, float y, float z)
         {
             return Generate(x, y, z);

@@ -142,7 +142,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunkSize: {x: 128, y: 128, z: 128}
   resolution: {x: 8, y: 8, z: 8}
-  horizontalness: 2
+  horizontalness: 3
   soilToAirVerticalRatio: 0.8
   soilToAirVolumetricRatio: 0.7
   chunkMaterial: {fileID: 2100000, guid: e3d6e46a6c4b91e4fa4453d4c8946e79, type: 2}
