@@ -9,7 +9,9 @@ public class TerrainMaster : MonoBehaviour {
     public Vector3 resolution;
     public float horizontalness;
     [Range(0, 1)]
-    public float soilToAirRatio;
+    public float soilToAirVerticalRatio;
+    [Range(0, 1)]
+    public float soilToAirVolumetricRatio;
 
     public Material chunkMaterial;
 
@@ -18,8 +20,13 @@ public class TerrainMaster : MonoBehaviour {
     
 	void Start ()
     {
-        GenerateChunk(Vector3.zero);
-        GenerateChunk(new Vector3(chunkSize.x, 0, 0));
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int z = -1; z <= 1; z++)
+            {
+                GenerateChunk(new Vector3(chunkSize.x * x, 0, chunkSize.z * z));
+            }
+        }        
 	}
 	
 	void Update ()
@@ -61,11 +68,12 @@ public class TerrainMaster : MonoBehaviour {
                 new Bounds(center, terrainMaster.chunkSize),
                 Sample,
                 terrainMaster.resolution,
-                0);
+                (1 - terrainMaster.soilToAirVolumetricRatio) * 2 - 1);
 
             ThreadWorkManager.RequestMainThreadWork(() =>
             {
                 gameObject = new GameObject();
+                gameObject.name = center.ToString();
                 gameObject.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
                 gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaster.chunkMaterial;
                 gameObject.transform.parent = terrainMaster.transform;
@@ -83,7 +91,7 @@ public class TerrainMaster : MonoBehaviour {
 
         private float Sample(float x, float y, float z)
         {
-            float[] frequencies = { 0.05f };
+            float[] frequencies = { 0.025f };
             float[] amplitudes = { 1, 0.5f, 0.25f };
             float point = 0;
 
@@ -92,7 +100,7 @@ public class TerrainMaster : MonoBehaviour {
                 point += Noise.CalcPixel3D(x * frequencies[i], y * frequencies[i] * terrainMaster.horizontalness, z * frequencies[i]) * amplitudes[i];
             }
 
-            return (y < terrainMaster.chunkSize.y * terrainMaster.soilToAirRatio) ? point : -1;
+            return ((y - center.y + terrainMaster.chunkSize.y / 2) < terrainMaster.chunkSize.y * terrainMaster.soilToAirVerticalRatio) ? point : -1;
         }
     }
 }

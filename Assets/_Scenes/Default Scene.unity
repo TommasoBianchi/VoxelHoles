@@ -143,7 +143,7 @@ MonoBehaviour:
   chunkSize: {x: 64, y: 64, z: 64}
   resolution: {x: 4, y: 4, z: 4}
   horizontalness: 5
-  soilToAirRatio: 0.5
+  soilToAirRatio: 0.75
   chunkMaterial: {fileID: 2100000, guid: e3d6e46a6c4b91e4fa4453d4c8946e79, type: 2}
 --- !u!4 &828548279
 Transform:
@@ -266,10 +266,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9a8a4f4c05314b4e80937ba777ba8cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 64
-  height: 64
-  holesAmount: 10
-  lateralBias: 15
+  width: 32
+  height: 32
+  holesAmount: 4
+  lateralBias: 10
   voxelPrefab: {fileID: 1464798291838190, guid: fefedd0384e86b045b65c51ce2048f49,
     type: 2}
   voxelMaterial: {fileID: 2100000, guid: e3d6e46a6c4b91e4fa4453d4c8946e79, type: 2}

@@ -26,27 +26,35 @@ public class MeshData
 
     public void AddTriangle(Vector3 a, Vector3 b, Vector3 c)
     {
+        if (a == b || a == c || b == c)
+            return;
+
         Vector3 normal = CalculateNormal(a, b, c);
+
+        float uvScaling = 0.1f;
 
         if (!vertexToIndexDictionary.ContainsKey(a))
         {
             vertexToIndexDictionary.Add(a, vertices.Count);
             vertices.Add(a);
-            uv.Add(new Vector2((a.x + a.y) / 4, a.z / 4));
+            //uv.Add((uvRotation * a));
+            uv.Add(new Vector2(a.x + a.y, a.z + a.y) * uvScaling);
             normals.Add(Vector3.zero);
         }
         if (!vertexToIndexDictionary.ContainsKey(b))
         {
             vertexToIndexDictionary.Add(b, vertices.Count);
             vertices.Add(b);
-            uv.Add(new Vector2((b.x + b.y) / 4, b.z / 4));
+            //uv.Add((uvRotation * b));
+            uv.Add(new Vector2(b.x + b.y, b.z + b.y) * uvScaling);
             normals.Add(Vector3.zero);
         }
         if (!vertexToIndexDictionary.ContainsKey(c))
         {
             vertexToIndexDictionary.Add(c, vertices.Count);
             vertices.Add(c);
-            uv.Add(new Vector2((c.x + c.y) / 4, c.z / 4));
+            //uv.Add((uvRotation * c));
+            uv.Add(new Vector2(c.x + c.y, c.z + c.y) * uvScaling);
             normals.Add(Vector3.zero);
         }
 
@@ -77,10 +85,10 @@ public class MeshData
         Vector3 v = b - a;
         Vector3 w = c - a;
         return new Vector3(
-            v.x * w.x - v.z * w.y,
-            v.z * w.z - v.x * w.z,
+            v.y * w.z - v.z * w.y,
+            v.z * w.x - v.x * w.z,
             v.x * w.y - v.y * w.x
-        );
+        ).normalized;
     }
 
     public Mesh ToMesh(bool recalculateNormals = false)
