@@ -5,6 +5,8 @@ using System.Threading;
 
 public class ThreadWorkManager
 {
+    public static ThreadHandle EmptyThreadHandle = new _EmptyThreadHandle();
+
     private static Queue<Action> actions = new Queue<Action>();
 
     private ThreadWorkManager() { }
@@ -51,9 +53,19 @@ public class ThreadWorkManager
             this.thread = thread;
         }
 
-        public void Wait()
+        public virtual void Wait()
         {
             thread.Join();
+        }
+    }
+
+    private class _EmptyThreadHandle : ThreadHandle
+    {
+        public _EmptyThreadHandle() : base(null) { }
+
+        public override void Wait()
+        {
+            
         }
     }
 
