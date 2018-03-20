@@ -140,10 +140,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c1f35f03fbe49c4ca5e835fbb9f6d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkSize: {x: 64, y: 64, z: 64}
-  resolution: {x: 4, y: 4, z: 4}
-  horizontalness: 5
-  soilToAirRatio: 0.75
+  chunkSize: {x: 128, y: 128, z: 128}
+  resolution: {x: 8, y: 8, z: 8}
+  horizontalness: 2
+  soilToAirVerticalRatio: 0.8
+  soilToAirVolumetricRatio: 0.7
   chunkMaterial: {fileID: 2100000, guid: e3d6e46a6c4b91e4fa4453d4c8946e79, type: 2}
 --- !u!4 &828548279
 Transform:
@@ -169,6 +170,7 @@ GameObject:
   - component: {fileID: 957340154}
   - component: {fileID: 957340153}
   - component: {fileID: 957340152}
+  - component: {fileID: 957340156}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -232,13 +234,26 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 957340151}
-  m_LocalRotation: {x: -0.29100665, y: 0.43862113, z: -0.15260077, w: -0.8364447}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 28.290546, y: 30.57007, z: 7.704664}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &957340156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 957340151}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ffe29421b88f5b4a807b524f76709c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 10
+  mouseScollSpeed: 120
 --- !u!1 &1402817017
 GameObject:
   m_ObjectHideFlags: 0

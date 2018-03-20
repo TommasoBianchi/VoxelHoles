@@ -91,7 +91,7 @@ public class TerrainMaster : MonoBehaviour {
 
         private float Sample(float x, float y, float z)
         {
-            float[] frequencies = { 0.025f };
+            float[] frequencies = { 0.01f };
             float[] amplitudes = { 1, 0.5f, 0.25f };
             float point = 0;
 
