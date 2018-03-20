@@ -79,6 +79,15 @@ public class MeshData
         normalsReady = true;
     }
 
+    public MeshData Transform(Matrix4x4 matrix)
+    {
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            vertices[i] = matrix.MultiplyPoint3x4(vertices[i]);
+        }
+        return this;
+    }
+
     // Math taken from https://math.stackexchange.com/a/305914
     private Vector3 CalculateNormal(Vector3 a, Vector3 b, Vector3 c)
     {

@@ -12,6 +12,7 @@ public class TerrainMaster : MonoBehaviour {
     public float soilToAirVerticalRatio;
     [Range(0, 1)]
     public float soilToAirVolumetricRatio;
+    public float postProcessingScale;
 
     public Material chunkMaterial;
 
@@ -20,13 +21,14 @@ public class TerrainMaster : MonoBehaviour {
     
 	void Start ()
     {
-        for (int x = -1; x <= 1; x++)
+        for (int x = -2; x <= 2; x++)
         {
-            for (int z = -1; z <= 1; z++)
+            for (int z = -2; z <= 2; z++)
             {
                 GenerateChunk(new Vector3(chunkSize.x * x, 0, chunkSize.z * z));
             }
         }
+        GenerateChunk(new Vector3(0, -chunkSize.y, 0));
         //GenerateChunk(Vector3.zero);
 	}
 	
@@ -55,10 +57,15 @@ public class TerrainMaster : MonoBehaviour {
         private GameObject gameObject;
         private bool isVisible = true;
 
+        private float chunkAltitude;
+
         public TerrainChunk(Vector3 center, TerrainMaster terrainMaster)
         {
             this.center = center;
             this.terrainMaster = terrainMaster;
+
+            float f = 0.01f;
+            this.chunkAltitude = Noise.CalcPixel3D(center.x / terrainMaster.chunkSize.x * f, 0, center.z / terrainMaster.chunkSize.z * f);
 
             ThreadWorkManager.RequestWork(Generate);
         }
@@ -71,6 +78,9 @@ public class TerrainMaster : MonoBehaviour {
                 terrainMaster.resolution,
                 (1 - terrainMaster.soilToAirVolumetricRatio) * 2 - 1);
 
+            Matrix4x4 matrix = Matrix4x4.Scale(Vector3.one * terrainMaster.postProcessingScale) * Matrix4x4.Translate(-center);
+            meshData.Transform(matrix);
+
             ThreadWorkManager.RequestMainThreadWork(() =>
             {
                 gameObject = new GameObject();
@@ -78,6 +88,7 @@ public class TerrainMaster : MonoBehaviour {
                 gameObject.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
                 gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaster.chunkMaterial;
                 gameObject.transform.parent = terrainMaster.transform;
+                gameObject.transform.position = center * terrainMaster.postProcessingScale;
                 gameObject.SetActive(isVisible);
             });
         }
@@ -115,24 +126,32 @@ public class TerrainMaster : MonoBehaviour {
 
         private float SamplePerlin(float x, float y, float z)
         {
-            float f = 0.008f;
-            float value = (Noise.CalcPixel3D(x * f, 0, z * f) + 1) / 2f; // Put in range [0, 1]
-            value = value * value;
+            float fMountain = 0.008f;
+            float mountainValue = (Noise.CalcPixel3D(x * fMountain, 0, z * fMountain) + 1) / 2f; // Put in range [0, 1]
+            mountainValue = mountainValue * mountainValue * mountainValue * mountainValue;
+
+            float fPlains = 0.03f;
+            float plainValue = Noise.CalcPixel3D(x * fPlains, 137, z * fPlains);
+
+            float value = (mountainValue * 9 + plainValue) / 10;
+
             float heightTreshold = terrainMaster.chunkSize.y / 2 * value;
             // Make sure heightTreshold is always at least a "tick" below the last computed point
             heightTreshold = Mathf.Min(heightTreshold, terrainMaster.chunkSize.y / 2 - terrainMaster.resolution.y - 1);
+
             if (y > heightTreshold)
             {
                 float t = 1 - Mathf.InverseLerp(heightTreshold, terrainMaster.chunkSize.y, y);
-                return -(1 - t * t * t * t);
+                return -(1 - t * t * t * t * t * t * t * t);
                 //return Mathf.Lerp(0, -1, (y - heightTreshold) / (terrainMaster.chunkSize.y - heightTreshold));
             }
             else
             {
                 float t = Mathf.InverseLerp(0, heightTreshold, y);
-                return 1 - t * t * t * t;
+                return 1 - t * t * t * t * t * t * t * t;
                 //return Mathf.Lerp(1, 0, (heightTreshold - y) / (heightTreshold));
             }
+
             //return (y > terrainMaster.chunkSize.y / 2 * value) ? -1 : 1;
         }
     }
