@@ -21,9 +21,9 @@ public class TerrainMaster : MonoBehaviour {
     
 	void Start ()
     {
-        for (int x = -2; x <= 2; x++)
+        for (int x = -1; x <= 1; x++)
         {
-            for (int z = -2; z <= 2; z++)
+            for (int z = -1; z <= 1; z++)
             {
                 GenerateChunk(new Vector3(chunkSize.x * x, 0, chunkSize.z * z));
             }
@@ -85,8 +85,14 @@ public class TerrainMaster : MonoBehaviour {
             {
                 gameObject = new GameObject();
                 gameObject.name = center.ToString();
-                gameObject.AddComponent<MeshFilter>().mesh = meshData.ToMesh();
+                gameObject.layer = LayerMask.NameToLayer("Terrain");
+
+                Mesh mesh = meshData.ToMesh();
+
+                gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
                 gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaster.chunkMaterial;
+                gameObject.AddComponent<MeshCollider>().sharedMesh = mesh;
+
                 gameObject.transform.parent = terrainMaster.transform;
                 gameObject.transform.position = center * terrainMaster.postProcessingScale;
                 gameObject.SetActive(isVisible);
@@ -111,7 +117,7 @@ public class TerrainMaster : MonoBehaviour {
 
         private float SampleSimplex(float x, float y, float z)
         {
-            float[] frequencies = { 0.01f };
+            float[] frequencies = { 0.02f };
             float[] amplitudes = { 1, 0.5f, 0.25f };
             float point = 0;
 
@@ -126,7 +132,7 @@ public class TerrainMaster : MonoBehaviour {
 
         private float SamplePerlin(float x, float y, float z)
         {
-            float fMountain = 0.008f;
+            float fMountain = 0.01f;
             float mountainValue = (Noise.CalcPixel3D(x * fMountain, 0, z * fMountain) + 1) / 2f; // Put in range [0, 1]
             mountainValue = mountainValue * mountainValue * mountainValue * mountainValue;
 
