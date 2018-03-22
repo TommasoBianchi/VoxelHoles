@@ -13,11 +13,16 @@ public class TerrainMaster : MonoBehaviour {
     [Range(0, 1)]
     public float soilToAirVolumetricRatio;
     public float postProcessingScale;
+    public float newChunkCheckTreshold;
+    public float newChunkSpawnTreshold;
+    public Transform playerTransform;
 
     public Material chunkMaterial;
 
     private Dictionary<Vector3, TerrainChunk> terrainChunks = new Dictionary<Vector3, TerrainChunk>();
-    private HashSet<TerrainChunk> visibleChunks = new HashSet<TerrainChunk>();
+    private List<TerrainChunk> visibleChunks = new List<TerrainChunk>();
+
+    private Vector3 lastUpdatePosition;
     
 	void Start ()
     {
@@ -28,13 +33,43 @@ public class TerrainMaster : MonoBehaviour {
                 GenerateChunk(new Vector3(chunkSize.x * x, 0, chunkSize.z * z));
             }
         }
-        GenerateChunk(new Vector3(0, -chunkSize.y, 0));
-        //GenerateChunk(Vector3.zero);
-	}
+    }
 	
 	void Update ()
     {
-		
+		if((playerTransform.position - lastUpdatePosition).sqrMagnitude > newChunkCheckTreshold * newChunkCheckTreshold)
+        {
+            visibleChunks.ForEach(chunk => chunk.ToggleVisibility(false));
+            visibleChunks.Clear();
+
+            Vector3Int currentChunkIndex = new Vector3Int(
+                Mathf.RoundToInt(playerTransform.position.x / (chunkSize.x * postProcessingScale)),
+                Mathf.RoundToInt(playerTransform.position.y / (chunkSize.y * postProcessingScale)),
+                Mathf.RoundToInt(playerTransform.position.z / (chunkSize.z * postProcessingScale))
+            );
+
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                {
+                    for (int z = -1; z <= 1; z++)
+                    {
+                        Vector3 newChunkPos = new Vector3(
+                            (currentChunkIndex.x + x) * chunkSize.x * postProcessingScale,
+                            (currentChunkIndex.y + y) * chunkSize.y * postProcessingScale,
+                            (currentChunkIndex.z + z) * chunkSize.z * postProcessingScale
+                        );
+
+                        if((playerTransform.position - newChunkPos).sqrMagnitude < newChunkSpawnTreshold * newChunkSpawnTreshold)
+                        {
+                            GenerateChunk(newChunkPos / postProcessingScale);
+                        }
+                    }
+                }
+            }
+
+            lastUpdatePosition = playerTransform.position;
+        }
 	}
 
     private void GenerateChunk(Vector3 center)
@@ -61,6 +96,7 @@ public class TerrainMaster : MonoBehaviour {
 
         public TerrainChunk(Vector3 center, TerrainMaster terrainMaster)
         {
+            Debug.Log("Creating chunk at " + center);
             this.center = center;
             this.terrainMaster = terrainMaster;
 
