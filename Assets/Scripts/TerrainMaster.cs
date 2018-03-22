@@ -12,6 +12,7 @@ public class TerrainMaster : MonoBehaviour {
     public float soilToAirVerticalRatio;
     [Range(0, 1)]
     public float soilToAirVolumetricRatio;
+    public float maxMountainHeight;
     public float postProcessingScale;
     public float newChunkCheckTreshold;
     public float newChunkSpawnTreshold;
@@ -28,10 +29,13 @@ public class TerrainMaster : MonoBehaviour {
     {
         for (int x = -1; x <= 1; x++)
         {
-            for (int z = -1; z <= 1; z++)
+            for (int y = -1; y <= 1; y++)
             {
-                GenerateChunk(new Vector3(chunkSize.x * x, 0, chunkSize.z * z));
-            }
+                for (int z = -1; z <= 1; z++)
+                {
+                    GenerateChunk(new Vector3(chunkSize.x * x, chunkSize.y * y, chunkSize.z * z));
+                }
+            }            
         }
     }
 	
@@ -96,7 +100,6 @@ public class TerrainMaster : MonoBehaviour {
 
         public TerrainChunk(Vector3 center, TerrainMaster terrainMaster)
         {
-            Debug.Log("Creating chunk at " + center);
             this.center = center;
             this.terrainMaster = terrainMaster;
 
@@ -108,11 +111,19 @@ public class TerrainMaster : MonoBehaviour {
 
         public void Generate()
         {
+            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
+
             MeshData meshData = MarchingCubes.Poligonyze(
                 new Bounds(center, terrainMaster.chunkSize),
                 Sample,
                 terrainMaster.resolution,
                 (1 - terrainMaster.soilToAirVolumetricRatio) * 2 - 1);
+
+            timer.Stop();
+            Debug.Log("Chunk " + center + ": MarchingCubes.Poligonyze in " + timer.ElapsedMilliseconds + " milliseconds.");
+            timer.Reset();
+            timer.Start();
 
             Matrix4x4 matrix = Matrix4x4.Scale(Vector3.one * terrainMaster.postProcessingScale) * Matrix4x4.Translate(-center);
             meshData.Transform(matrix);
@@ -132,6 +143,9 @@ public class TerrainMaster : MonoBehaviour {
                 gameObject.transform.parent = terrainMaster.transform;
                 gameObject.transform.position = center * terrainMaster.postProcessingScale;
                 gameObject.SetActive(isVisible);
+
+                timer.Stop();
+                Debug.Log("Chunk " + center + ": everything ready after " + timer.ElapsedMilliseconds + " milliseconds.");
             });
         }
 
@@ -161,40 +175,49 @@ public class TerrainMaster : MonoBehaviour {
             {
                 point += Noise.CalcPixel3D(x * frequencies[i], y * frequencies[i] * terrainMaster.horizontalness, z * frequencies[i]) * amplitudes[i];
             }
-
-            //return ((y - center.y + terrainMaster.chunkSize.y / 2) < terrainMaster.chunkSize.y * terrainMaster.soilToAirVerticalRatio) ? point : -1;
+            
             return point;
         }
 
         private float SamplePerlin(float x, float y, float z)
         {
-            float fMountain = 0.01f;
-            float mountainValue = (Noise.CalcPixel3D(x * fMountain, 0, z * fMountain) + 1) / 2f; // Put in range [0, 1]
-            mountainValue = mountainValue * mountainValue * mountainValue * mountainValue;
+            //float fMountain = 0.0008f;
+            //float mountainValue = (Noise.CalcPixel3D(x * fMountain, 0, z * fMountain) + 1) / 2f; // Put in range [0, 1]
+            //mountainValue = mountainValue * mountainValue * mountainValue * mountainValue;
 
-            float fPlains = 0.03f;
-            float plainValue = Noise.CalcPixel3D(x * fPlains, 137, z * fPlains);
+            ////float fPlains = 0.01f;
+            ////float plainValue = Noise.CalcPixel3D(x * fPlains, 137, z * fPlains);
 
-            float value = (mountainValue * 9 + plainValue) / 10;
+            ////float value = (mountainValue * 9 + plainValue) / 10;
+            //float value = mountainValue;
 
-            float heightTreshold = terrainMaster.chunkSize.y / 2 * value;
-            // Make sure heightTreshold is always at least a "tick" below the last computed point
-            heightTreshold = Mathf.Min(heightTreshold, terrainMaster.chunkSize.y / 2 - terrainMaster.resolution.y - 1);
+            ////float heightTreshold = terrainMaster.chunkSize.y / 2 * value;
+            //// Make sure heightTreshold is always at least a "tick" below the last computed point
+            ////heightTreshold = Mathf.Min(heightTreshold, terrainMaster.chunkSize.y / 2 - terrainMaster.resolution.y - 1);
+
+            //float heightTreshold = value * terrainMaster.maxMountainHeight;
+
+            //float fMountain = 0.01f;
+            //float mountainValue = (Noise.CalcPixel3D(x * fMountain, 0, z * fMountain) + 1) / 2f; // Put in range [0, 1]
+            //mountainValue = mountainValue * mountainValue * mountainValue * mountainValue;
+
+            float fMountain2 = 0.008f;
+            float mountainValue2 = Noise.CalcPixel3D(x * fMountain2, 512, z * fMountain2); // Keep in range [-1, 1]
+            mountainValue2 = mountainValue2 * mountainValue2 * mountainValue2;
+
+            //float heightTreshold = mountainValue * terrainMaster.maxMountainHeight + mountainValue2 * terrainMaster.chunkSize.y;
+            float heightTreshold = mountainValue2 * terrainMaster.chunkSize.y;
 
             if (y > heightTreshold)
             {
                 float t = 1 - Mathf.InverseLerp(heightTreshold, terrainMaster.chunkSize.y, y);
                 return -(1 - t * t * t * t * t * t * t * t);
-                //return Mathf.Lerp(0, -1, (y - heightTreshold) / (terrainMaster.chunkSize.y - heightTreshold));
             }
             else
             {
                 float t = Mathf.InverseLerp(0, heightTreshold, y);
                 return 1 - t * t * t * t * t * t * t * t;
-                //return Mathf.Lerp(1, 0, (heightTreshold - y) / (heightTreshold));
             }
-
-            //return (y > terrainMaster.chunkSize.y / 2 * value) ? -1 : 1;
         }
     }
 }
