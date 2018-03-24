@@ -15,7 +15,7 @@ public class TerrainMaster : MonoBehaviour {
     public float maxMountainHeight;
     public float postProcessingScale;
     public float newChunkCheckTreshold;
-    public float newChunkSpawnTreshold;
+    public Vector3 newChunkSpawnTreshold;
     public Transform playerTransform;
 
     public Material chunkMaterial;
@@ -24,57 +24,83 @@ public class TerrainMaster : MonoBehaviour {
     private List<TerrainChunk> visibleChunks = new List<TerrainChunk>();
 
     private Vector3 lastUpdatePosition;
+    private bool isUpdating = false;
     
 	void Start ()
     {
-        for (int x = -1; x <= 1; x++)
-        {
-            for (int y = -1; y <= 1; y++)
-            {
-                for (int z = -1; z <= 1; z++)
-                {
-                    GenerateChunk(new Vector3(chunkSize.x * x, chunkSize.y * y, chunkSize.z * z));
-                }
-            }            
-        }
+        //for (int x = -1; x <= 1; x++)
+        //{
+        //    for (int y = -1; y <= 1; y++)
+        //    {
+        //        for (int z = -1; z <= 1; z++)
+        //        {
+        //            GenerateChunk(new Vector3(chunkSize.x * x, chunkSize.y * y, chunkSize.z * z));
+        //        }
+        //    }
+        //}
+        //GenerateChunk(Vector3.zero);
+
+        Vector3 playerPosition = playerTransform.position;
+        ThreadWorkManager.RequestWork(() => UpdateChunks(playerPosition, visibleChunks));
     }
 	
 	void Update ()
     {
+        if (isUpdating)
+            return;
+
 		if((playerTransform.position - lastUpdatePosition).sqrMagnitude > newChunkCheckTreshold * newChunkCheckTreshold)
         {
-            visibleChunks.ForEach(chunk => chunk.ToggleVisibility(false));
-            visibleChunks.Clear();
+            UpdateChunks(playerTransform.position, visibleChunks);
+        }
+    }
 
-            Vector3Int currentChunkIndex = new Vector3Int(
-                Mathf.RoundToInt(playerTransform.position.x / (chunkSize.x * postProcessingScale)),
-                Mathf.RoundToInt(playerTransform.position.y / (chunkSize.y * postProcessingScale)),
-                Mathf.RoundToInt(playerTransform.position.z / (chunkSize.z * postProcessingScale))
-            );
+    void UpdateChunks(Vector3 playerPosition, List<TerrainChunk> visibleChunks)
+    {
+        isUpdating = true;
 
-            for (int x = -1; x <= 1; x++)
+        visibleChunks.ForEach(chunk => chunk.ToggleVisibility(false));
+        visibleChunks.Clear();
+
+        Vector3Int currentChunkIndex = new Vector3Int(
+            Mathf.RoundToInt(playerPosition.x / (chunkSize.x * postProcessingScale)),
+            Mathf.RoundToInt(playerPosition.y / (chunkSize.y * postProcessingScale)),
+            Mathf.RoundToInt(playerPosition.z / (chunkSize.z * postProcessingScale))
+        );
+
+        Vector3Int checkIndexDist = new Vector3Int(
+            Mathf.CeilToInt(newChunkSpawnTreshold.x / (chunkSize.x * postProcessingScale)),
+            Mathf.CeilToInt(newChunkSpawnTreshold.y / (chunkSize.y * postProcessingScale)),
+            Mathf.CeilToInt(newChunkSpawnTreshold.z / (chunkSize.z * postProcessingScale))
+        );
+
+        for (int x = -checkIndexDist.x; x <= checkIndexDist.x; x++)
+        {
+            for (int y = -checkIndexDist.y; y <= checkIndexDist.y; y++)
             {
-                for (int y = -1; y <= 1; y++)
+                for (int z = -checkIndexDist.z; z <= checkIndexDist.z; z++)
                 {
-                    for (int z = -1; z <= 1; z++)
-                    {
-                        Vector3 newChunkPos = new Vector3(
-                            (currentChunkIndex.x + x) * chunkSize.x * postProcessingScale,
-                            (currentChunkIndex.y + y) * chunkSize.y * postProcessingScale,
-                            (currentChunkIndex.z + z) * chunkSize.z * postProcessingScale
-                        );
+                    Vector3 newChunkPos = new Vector3(
+                        (currentChunkIndex.x + x) * chunkSize.x * postProcessingScale,
+                        (currentChunkIndex.y + y) * chunkSize.y * postProcessingScale,
+                        (currentChunkIndex.z + z) * chunkSize.z * postProcessingScale
+                    );
 
-                        if((playerTransform.position - newChunkPos).sqrMagnitude < newChunkSpawnTreshold * newChunkSpawnTreshold)
-                        {
-                            GenerateChunk(newChunkPos / postProcessingScale);
-                        }
+                    Vector3 dist = playerPosition - newChunkPos;
+
+                    if (Mathf.Abs(dist.x) < newChunkSpawnTreshold.x ||
+                        Mathf.Abs(dist.y) < newChunkSpawnTreshold.y ||
+                        Mathf.Abs(dist.z) < newChunkSpawnTreshold.z)
+                    {
+                        GenerateChunk(newChunkPos / postProcessingScale);
                     }
                 }
             }
-
-            lastUpdatePosition = playerTransform.position;
         }
-	}
+
+        lastUpdatePosition = playerPosition;
+        isUpdating = false;
+    }
 
     private void GenerateChunk(Vector3 center)
     {
@@ -122,8 +148,6 @@ public class TerrainMaster : MonoBehaviour {
 
             timer.Stop();
             Debug.Log("Chunk " + center + ": MarchingCubes.Poligonyze in " + timer.ElapsedMilliseconds + " milliseconds.");
-            timer.Reset();
-            timer.Start();
 
             Matrix4x4 matrix = Matrix4x4.Scale(Vector3.one * terrainMaster.postProcessingScale) * Matrix4x4.Translate(-center);
             meshData.Transform(matrix);
@@ -143,9 +167,6 @@ public class TerrainMaster : MonoBehaviour {
                 gameObject.transform.parent = terrainMaster.transform;
                 gameObject.transform.position = center * terrainMaster.postProcessingScale;
                 gameObject.SetActive(isVisible);
-
-                timer.Stop();
-                Debug.Log("Chunk " + center + ": everything ready after " + timer.ElapsedMilliseconds + " milliseconds.");
             });
         }
 

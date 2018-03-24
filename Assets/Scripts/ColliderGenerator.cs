@@ -48,9 +48,16 @@ public class ColliderGenerator : MonoBehaviour {
             Vector3 contactPoint = hitInfo.point;
             Vector3 normal = hitInfo.normal;
 
+            // Consider tessellation displacement
+            float _SimplexNoiseFrequency = 0.03f;
+            float displacement = Simplex.Noise.CalcPixel3D(contactPoint.x * _SimplexNoiseFrequency, contactPoint.y * _SimplexNoiseFrequency, contactPoint.z * _SimplexNoiseFrequency);
+            float sign = Mathf.Sign(displacement);
+            displacement = displacement * displacement * sign;
+            contactPoint += displacement * normal;
+
             collider.SetActive(true);
             collider.transform.position = contactPoint;
-            //collider.transform.rotation = Quaternion.LookRotation(Vector3.forward, normal);
+
             collider.transform.up = normal;
         }
         else
