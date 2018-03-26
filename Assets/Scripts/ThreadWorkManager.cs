@@ -5,67 +5,105 @@ using System.Threading;
 
 public class ThreadWorkManager
 {
-    public static ThreadHandle EmptyThreadHandle = new _EmptyThreadHandle();
-
-    private static Queue<Action> actions = new Queue<Action>();
+    private static Queue<Action> mainThreadActions = new Queue<Action>();
+    private static List<Worker> workers = new List<Worker>();
+    private static int i = 0;
 
     private ThreadWorkManager() { }
 
     static ThreadWorkManager()
     {
         new GameObject().AddComponent<ThreadWorkManagerUpdater>().name = "ThreadWorkManagerUpdater";
+
+        for (int i = 0; i < Environment.ProcessorCount; i++)
+        {
+            workers.Add(new Worker());
+        }
     }
 
-    public static ThreadHandle RequestWork(Action work)
+    public static void RequestWork(Action work)
     {
-        Thread thread = new Thread(new ThreadStart(work));
-        thread.Start();
-        return new ThreadHandle(thread);
+        //Thread thread = new Thread(new ThreadStart(work));
+        //thread.Start();
+        workers[i].AddWork(new List<Action>(new Action[] { work }));
+        i = (i + 1) % workers.Count;
     }
 
     public static void RequestMainThreadWork(Action work)
     {
-        lock (actions)
+        lock (mainThreadActions)
         {
-            actions.Enqueue(work);
+            mainThreadActions.Enqueue(work);
         }
     }
 
     protected static void Update()
     {
-        if (actions.Count > 0)
+        if (mainThreadActions.Count > 0)
         {
             Action work = () => { };
-            lock (actions)
+            lock (mainThreadActions)
             {
-                work = actions.Dequeue();
+                work = mainThreadActions.Dequeue();
             }
             work.Invoke();
         }
     }
 
-    public class ThreadHandle
+    protected static void Destroy()
     {
-        private Thread thread;
-
-        public ThreadHandle(Thread thread)
+        foreach (Worker worker in workers)
         {
-            this.thread = thread;
-        }
-
-        public virtual void Wait()
-        {
-            thread.Join();
+            worker.Destroy();
         }
     }
 
-    private class _EmptyThreadHandle : ThreadHandle
+    private class Worker
     {
-        public _EmptyThreadHandle() : base(null) { }
+        private Queue<Action> workToDo = new Queue<Action>();
+        private ManualResetEvent onWorkAdded = new ManualResetEvent(false);
+        private bool isAlive = true;
 
-        public override void Wait()
+        public Worker()
         {
-            
+            new Thread(new ThreadStart(Run)).Start();
+        }
+
+        private void Run()
+        {
+            Action work = () => { };
+            while (isAlive)
+            {
+                lock (workToDo)
+                {
+                    if (workToDo.Count == 0)
+                        onWorkAdded.WaitOne();
+
+                    work = workToDo.Dequeue();
+
+                    if (workToDo.Count == 0)
+                        onWorkAdded.Reset();
+                }
+
+                work.Invoke();
+            }
+        }
+
+        public void AddWork(List<Action> work)
+        {
+            lock (workToDo)
+            {
+                foreach (Action a in work)
+                {
+                    workToDo.Enqueue(a);
+                }
+                onWorkAdded.Set();
+            }
+        }
+
+        public void Destroy()
+        {
+            isAlive = false;
         }
     }
 
@@ -74,6 +112,11 @@ public class ThreadWorkManager
         private void Update()
         {
             ThreadWorkManager.Update();
+        }
+
+        private void OnDestroy()
+        {
+            ThreadWorkManager.Destroy();
         }
     }
 }
