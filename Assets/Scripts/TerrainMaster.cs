@@ -28,18 +28,6 @@ public class TerrainMaster : MonoBehaviour {
     
 	void Start ()
     {
-        //for (int x = -1; x <= 1; x++)
-        //{
-        //    for (int y = -1; y <= 1; y++)
-        //    {
-        //        for (int z = -1; z <= 1; z++)
-        //        {
-        //            GenerateChunk(new Vector3(chunkSize.x * x, chunkSize.y * y, chunkSize.z * z));
-        //        }
-        //    }
-        //}
-        //GenerateChunk(Vector3.zero);
-
         Vector3 playerPosition = playerTransform.position;
         ThreadWorkManager.RequestWork(() => UpdateChunks(playerPosition, visibleChunks));
     }
@@ -74,9 +62,9 @@ public class TerrainMaster : MonoBehaviour {
             Mathf.CeilToInt(newChunkSpawnTreshold.z / (chunkSize.z * postProcessingScale))
         );
 
-        for (int x = -checkIndexDist.x; x <= checkIndexDist.x; x++)
+        for (int y = checkIndexDist.y; y <= -checkIndexDist.y; y--) // Render first the upper layer because they are the most visible one by players
         {
-            for (int y = -checkIndexDist.y; y <= checkIndexDist.y; y++)
+            for (int x = -checkIndexDist.x; x <= checkIndexDist.x; x++)
             {
                 for (int z = -checkIndexDist.z; z <= checkIndexDist.z; z++)
                 {

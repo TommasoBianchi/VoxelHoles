@@ -7,7 +7,8 @@ public class ThreadWorkManager
 {
     private static Queue<Action> mainThreadActions = new Queue<Action>();
     private static List<Worker> workers = new List<Worker>();
-    private static int i = 0;
+    private static Queue<Action> workerActions = new Queue<Action>();
+    private static int workPoolSize = 4;
 
     private ThreadWorkManager() { }
 
@@ -17,16 +18,30 @@ public class ThreadWorkManager
 
         for (int i = 0; i < Environment.ProcessorCount; i++)
         {
-            workers.Add(new Worker());
+            workers.Add(new Worker(Refill));
+        }
+        Debug.Log("ThreadWorkManager created " + workers.Count + " threads");
+    }
+
+    public static void RequestWork(List<Action> work)
+    {
+        lock (workerActions)
+        {
+            foreach (Action a in work)
+            {
+                workerActions.Enqueue(a);
+            }
+        }
+
+        foreach (Worker worker in workers)
+        {
+            worker.SetWorkAdded();
         }
     }
 
     public static void RequestWork(Action work)
     {
-        //Thread thread = new Thread(new ThreadStart(work));
-        //thread.Start();
-        workers[i].AddWork(new List<Action>(new Action[] { work }));
-        i = (i + 1) % workers.Count;
+        RequestWork(new List<Action>(new Action[] { work }));
     }
 
     public static void RequestMainThreadWork(Action work)
@@ -58,14 +73,31 @@ public class ThreadWorkManager
         }
     }
 
+    private static Queue<Action> Refill()
+    {
+        Queue<Action> result = new Queue<Action>();
+
+        lock (workerActions)
+        {
+            for (int i = 0; i < workPoolSize && workerActions.Count > 0; i++)
+            {
+                result.Enqueue(workerActions.Dequeue());
+            }
+        }
+
+        return result;
+    }
+
     private class Worker
     {
         private Queue<Action> workToDo = new Queue<Action>();
         private ManualResetEvent onWorkAdded = new ManualResetEvent(false);
         private bool isAlive = true;
+        private Func<Queue<Action>> refillFunction;
 
-        public Worker()
+        public Worker(Func<Queue<Action>> refillFunction)
         {
+            this.refillFunction = refillFunction;
             new Thread(new ThreadStart(Run)).Start();
         }
 
@@ -74,31 +106,43 @@ public class ThreadWorkManager
             Action work = () => { };
             while (isAlive)
             {
+                if (workToDo.Count == 0)
+                    TryToRefill();
+
+                if (workToDo.Count == 0)
+                    onWorkAdded.WaitOne();
+
                 lock (workToDo)
                 {
-                    if (workToDo.Count == 0)
-                        onWorkAdded.WaitOne();
-
                     work = workToDo.Dequeue();
 
                     if (workToDo.Count == 0)
                         onWorkAdded.Reset();
-                }
+                }                
 
                 work.Invoke();
             }
         }
 
-        public void AddWork(List<Action> work)
+        public void SetWorkAdded()
         {
             lock (workToDo)
             {
-                foreach (Action a in work)
-                {
-                    workToDo.Enqueue(a);
-                }
-                onWorkAdded.Set();
+                TryToRefill();
             }
+        }
+
+        private void TryToRefill()
+        {
+            Queue<Action> refill = refillFunction.Invoke();
+
+            foreach (Action a in refill)
+            {
+                workToDo.Enqueue(a);
+            }
+
+            if (workToDo.Count > 0)
+                onWorkAdded.Set();
         }
 
         public void Destroy()
