@@ -33,7 +33,7 @@ InterpolatorsVertex MyVertexProgramSimplex (VertexData v, int isTessellating) {
 	float3 worldPos = mul(unity_ObjectToWorld, v.vertex);
 	float displacement = noise3D(worldPos.x * _SimplexNoiseFrequency, worldPos.y * _SimplexNoiseFrequency, worldPos.z * _SimplexNoiseFrequency);
 	float sign = ((displacement > 0) - (displacement < 0));
-	displacement = displacement * displacement * displacement * displacement * sign;
+	displacement = displacement * displacement * sign;
 	displacement *= isTessellating; // Disable displacement if is not tessellating
 	//displacement = ((displacement > 0) - (displacement < 0)) - displacement; // Creates cool canyons
 	float3 normal = normalize(v.normal);

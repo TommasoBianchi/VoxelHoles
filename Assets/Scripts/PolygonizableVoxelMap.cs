@@ -4,11 +4,9 @@ using UnityEngine;
 public class PolygonizableVoxelMap : MarchingCubes.IPoligonyzable
 {    
     private float[,,] fieldValues;
-    private VoxelMap voxelMap;
 
     public PolygonizableVoxelMap(VoxelMap voxelMap)
     {
-        this.voxelMap = voxelMap;
         this.fieldValues = new float[voxelMap.Width, voxelMap.Height, voxelMap.Depth];
 
         for (int x = 0; x < voxelMap.Width; x++)

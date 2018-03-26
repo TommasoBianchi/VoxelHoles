@@ -4,8 +4,8 @@
 		_TessellationEdgeLength ("Tessellation Edge Length", Range(0.1, 10)) = 0.5
 		_TessellationEnableDistance ("Tessellation Enable Distance", Range(10, 1000)) = 50
 
-		_SimplexNoiseFrequency ("Simplex Noise Frequency", Range(0.0001, 1)) = 1
-		_SimplexNoiseAmplitude ("Simplex Noise Amplitude", Range(0.001, 10)) = 1
+		_SimplexNoiseFrequency ("Simplex Noise Frequency", Float) = 1
+		_SimplexNoiseAmplitude ("Simplex Noise Amplitude", Float) = 1
 
 
 		_Color ("Tint", Color) = (1, 1, 1, 1)

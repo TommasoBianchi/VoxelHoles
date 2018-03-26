@@ -18,6 +18,9 @@ public class TerrainMaster : MonoBehaviour {
     public Vector3 newChunkSpawnTreshold;
     public Transform playerTransform;
 
+    public float TessellationSimplexNoiseFrequency;
+    public float TessellationSimplexNoiseAmplitude;
+
     public Material chunkMaterial;
 
     private Dictionary<Vector3, TerrainChunk> terrainChunks = new Dictionary<Vector3, TerrainChunk>();
@@ -30,6 +33,14 @@ public class TerrainMaster : MonoBehaviour {
     {
         Vector3 playerPosition = playerTransform.position;
         ThreadWorkManager.RequestWork(() => UpdateChunks(playerPosition, visibleChunks));
+
+        chunkMaterial.SetFloat("_SimplexNoiseFrequency", TessellationSimplexNoiseFrequency);
+        chunkMaterial.SetFloat("_SimplexNoiseAmplitude", TessellationSimplexNoiseAmplitude);
+        foreach (var item in FindObjectsOfType<ColliderGenerator>())
+        {
+            item.TessellationSimplexNoiseFrequency = TessellationSimplexNoiseFrequency;
+            item.TessellationSimplexNoiseAmplitude = TessellationSimplexNoiseAmplitude;
+        }
     }
 	
 	void Update ()
@@ -110,15 +121,10 @@ public class TerrainMaster : MonoBehaviour {
         private GameObject gameObject;
         private bool isVisible = true;
 
-        private float chunkAltitude;
-
         public TerrainChunk(Vector3 center, TerrainMaster terrainMaster)
         {
             this.center = center;
             this.terrainMaster = terrainMaster;
-
-            float f = 0.01f;
-            this.chunkAltitude = Noise.CalcPixel3D(center.x / terrainMaster.chunkSize.x * f, 0, center.z / terrainMaster.chunkSize.z * f);
 
             ThreadWorkManager.RequestWork(Generate);
         }

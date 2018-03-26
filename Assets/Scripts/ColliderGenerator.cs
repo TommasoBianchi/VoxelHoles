@@ -10,6 +10,12 @@ public class ColliderGenerator : MonoBehaviour {
     public LayerMask layerToRaycast;
     public Vector3 colliderSize;
     public float updateTresholdDistance;
+    public bool useTessellationDisplacement;
+
+    [HideInInspector]
+    public float TessellationSimplexNoiseFrequency;
+    [HideInInspector]
+    public float TessellationSimplexNoiseAmplitude;
 
     private GameObject[] colliders;
     private Vector3 lastUpdatePosition = Vector3.one * 99999;
@@ -43,26 +49,51 @@ public class ColliderGenerator : MonoBehaviour {
     void UpdateCollider(Vector3 direction, GameObject collider)
     {
         RaycastHit hitInfo;
-		if(Physics.Raycast(source.position, direction, out hitInfo, distance, layerToRaycast))
+        Vector3 sourcePos = source.position - 2 * Mathf.Abs(SimplexDisplacement(source.position)) * direction;
+		if (Physics.Raycast(sourcePos, direction, out hitInfo, distance, layerToRaycast))
         {
-            Vector3 contactPoint = hitInfo.point;
-            Vector3 normal = hitInfo.normal;
-
-            // Consider tessellation displacement
-            float _SimplexNoiseFrequency = 0.03f;
-            float displacement = Simplex.Noise.CalcPixel3D(contactPoint.x * _SimplexNoiseFrequency, contactPoint.y * _SimplexNoiseFrequency, contactPoint.z * _SimplexNoiseFrequency);
-            float sign = Mathf.Sign(displacement);
-            displacement = displacement * displacement * sign;
-            contactPoint += displacement * normal;
-
-            collider.SetActive(true);
-            collider.transform.position = contactPoint;
-
-            collider.transform.up = normal;
+            SetCollider(collider, hitInfo);
         }
+        //else if (Physics.Raycast(source.position + direction * distance, -direction, out hitInfo, distance, layerToRaycast) &&
+        //         Vector3.Angle(direction, hitInfo.normal) > 90)
+        //{
+        //    // Reverse raycast to avoid case in which the right collider position is into the mesh itself due to 
+        //    // tessellation displacement
+        //    Debug.Log(direction + " " + hitInfo.normal + " " + Vector3.Angle(direction, hitInfo.normal));
+        //    SetCollider(collider, hitInfo);
+        //}
         else
         {
             collider.SetActive(false);
         }
 	}
+
+    private void SetCollider(GameObject collider, RaycastHit hitInfo)
+    {
+        Vector3 contactPoint = hitInfo.point;
+        Vector3 normal = hitInfo.normal;
+
+        // Consider tessellation displacement
+        if (useTessellationDisplacement)
+        {
+            float displacement = SimplexDisplacement(contactPoint);
+            contactPoint += displacement * normal * TessellationSimplexNoiseAmplitude;
+        }
+
+        collider.SetActive(true);
+        collider.transform.position = contactPoint;
+
+        collider.transform.up = normal;
+    }
+
+    private float SimplexDisplacement(Vector3 contactPoint)
+    {
+        float displacement = Simplex.Noise.CalcPixel3D(
+                                            contactPoint.x * TessellationSimplexNoiseFrequency,
+                                            contactPoint.y * TessellationSimplexNoiseFrequency,
+                                            contactPoint.z * TessellationSimplexNoiseFrequency);
+        float sign = Mathf.Sign(displacement);
+        displacement = displacement * displacement * sign;
+        return displacement;
+    }
 }

@@ -318,6 +318,8 @@ MonoBehaviour:
   newChunkCheckTreshold: 20
   newChunkSpawnTreshold: {x: 1000, y: 250, z: 1000}
   playerTransform: {fileID: 907744278}
+  TessellationSimplexNoiseFrequency: 0.02
+  TessellationSimplexNoiseAmplitude: 5
   chunkMaterial: {fileID: 2100000, guid: 7a82c4bff625b8848af9e77f32c39a0a, type: 2}
 --- !u!4 &828548279
 Transform:
@@ -378,7 +380,7 @@ MonoBehaviour:
   speed: 5
   rotationSpeed: 80
   maxUpDownAngle: 45
-  activationDelay: 10
+  activationDelay: 5
 --- !u!54 &907744280
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -675,6 +677,9 @@ MonoBehaviour:
     m_Bits: 256
   colliderSize: {x: 5, y: 0.1, z: 5}
   updateTresholdDistance: 0.5
+  useTessellationDisplacement: 0
+  TessellationSimplexNoiseFrequency: 0
+  TessellationSimplexNoiseAmplitude: 0
 --- !u!1 &1617568883
 GameObject:
   m_ObjectHideFlags: 0
@@ -715,7 +720,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   colliderSize: {x: 2, y: 0.1, z: 2}
-  updateTresholdDistance: 0.5
+  updateTresholdDistance: 0.2
+  useTessellationDisplacement: 1
+  TessellationSimplexNoiseFrequency: 0
+  TessellationSimplexNoiseAmplitude: 0
 --- !u!4 &1617568885
 Transform:
   m_ObjectHideFlags: 0
