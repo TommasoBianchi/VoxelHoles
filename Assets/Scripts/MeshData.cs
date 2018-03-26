@@ -31,7 +31,7 @@ public class MeshData
 
         Vector3 normal = CalculateNormal(a, b, c);
 
-        float uvScaling = 0.1f;
+        float uvScaling = 1f;
 
         if (!vertexToIndexDictionary.ContainsKey(a))
         {

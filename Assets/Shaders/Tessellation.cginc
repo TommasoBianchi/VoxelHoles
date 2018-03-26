@@ -30,13 +30,15 @@ InterpolatorsVertex MyVertexProgramSimplex (VertexData v, int isTessellating) {
 	UNITY_SETUP_INSTANCE_ID(v);
 	UNITY_TRANSFER_INSTANCE_ID(v, i);
 
-	float displacement = noise3D(v.vertex.x * _SimplexNoiseFrequency, v.vertex.y * _SimplexNoiseFrequency, v.vertex.z * _SimplexNoiseFrequency);
+	float3 worldPos = mul(unity_ObjectToWorld, v.vertex);
+	float displacement = noise3D(worldPos.x * _SimplexNoiseFrequency, worldPos.y * _SimplexNoiseFrequency, worldPos.z * _SimplexNoiseFrequency);
 	float sign = ((displacement > 0) - (displacement < 0));
-	displacement = displacement * displacement * sign;
+	displacement = displacement * displacement * displacement * displacement * sign;
 	displacement *= isTessellating; // Disable displacement if is not tessellating
 	//displacement = ((displacement > 0) - (displacement < 0)) - displacement; // Creates cool canyons
 	float3 normal = normalize(v.normal);
-	v.vertex.xyz += v.normal * displacement * _SimplexNoiseAmplitude;
+	//float3 normal; normal.x = 0; normal.y = 1; normal.z = 0;
+	v.vertex.xyz += normal * displacement * _SimplexNoiseAmplitude;
 
 	i.pos = UnityObjectToClipPos(v.vertex);
 	i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
@@ -44,14 +46,6 @@ InterpolatorsVertex MyVertexProgramSimplex (VertexData v, int isTessellating) {
 		i.worldPos.w = i.pos.z;
 	#endif
 	i.normal = UnityObjectToWorldNormal(v.normal);
-
-	/*
-	* This does not work
-	*
-	float displacement = noise3D(i.worldPos.x, i.worldPos.y, i.worldPos.z);
-	float3 normal = normalize(i.normal);
-	i.worldPos.xyz += normal * displacement * 5;
-	*/
 
 	#if defined(BINORMAL_PER_FRAGMENT)
 		i.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);

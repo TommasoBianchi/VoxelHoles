@@ -80,14 +80,14 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _ParallaxStrength: 0
-    - _SimplexNoiseAmplitude: 0.5
-    - _SimplexNoiseFrequency: 0.03
+    - _SimplexNoiseAmplitude: 5
+    - _SimplexNoiseFrequency: 0.02
     - _Smoothness: 0.1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessellationEdgeLength: 2
-    - _TessellationEnableDistance: 100
+    - _TessellationEdgeLength: 1
+    - _TessellationEnableDistance: 500
     - _TessellationUniform: 1
     - _UVSec: 0
     - _WireframeSmoothing: 1
