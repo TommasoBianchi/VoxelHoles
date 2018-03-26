@@ -62,7 +62,7 @@ public class TerrainMaster : MonoBehaviour {
             Mathf.CeilToInt(newChunkSpawnTreshold.z / (chunkSize.z * postProcessingScale))
         );
 
-        for (int y = checkIndexDist.y; y <= -checkIndexDist.y; y--) // Render first the upper layer because they are the most visible one by players
+        for (int y = checkIndexDist.y; y >= -checkIndexDist.y; y--) // Render first the upper layer because they are the most visible one by players
         {
             for (int x = -checkIndexDist.x; x <= checkIndexDist.x; x++)
             {
