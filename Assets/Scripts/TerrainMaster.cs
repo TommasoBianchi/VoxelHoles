@@ -58,6 +58,8 @@ public class TerrainMaster : MonoBehaviour {
     {
         isUpdating = true;
 
+        // TODO: make visibleChunks an hash set and try not to deactivate and reactivated chunks
+        // that are known to still remain visible
         visibleChunks.ForEach(chunk => chunk.ToggleVisibility(false));
         visibleChunks.Clear();
 
@@ -72,6 +74,8 @@ public class TerrainMaster : MonoBehaviour {
             Mathf.CeilToInt(newChunkSpawnTreshold.y / (chunkSize.y * postProcessingScale)),
             Mathf.CeilToInt(newChunkSpawnTreshold.z / (chunkSize.z * postProcessingScale))
         );
+
+        Debug.Log(checkIndexDist);
 
         for (int y = checkIndexDist.y; y >= -checkIndexDist.y; y--) // Render first the upper layer because they are the most visible one by players
         {
