@@ -35,7 +35,7 @@ public class WalkingPlayer : MonoBehaviour {
         if (!isActive)
             return;
 
-        Vector3 dir = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("UpDown"), Input.GetAxis("Vertical")).normalized;
+        Vector3 dir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")).normalized;
 
         transform.Translate(dir * speed * Time.deltaTime);
 
