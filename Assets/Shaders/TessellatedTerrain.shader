@@ -1,7 +1,7 @@
 ﻿Shader "Custom/TessellatedTerrain" {
 
 	Properties {
-		_TessellationEdgeLength ("Tessellation Edge Length", Range(0.1, 10)) = 0.5
+		_TessellationEdgeLength ("Tessellation Edge Length", Range(0.01, 10)) = 0.5
 		_TessellationEnableDistance ("Tessellation Enable Distance", Range(1, 1000)) = 50
 
 		_SimplexNoiseFrequency ("Simplex Noise Frequency", Float) = 1

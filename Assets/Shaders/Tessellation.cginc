@@ -66,6 +66,15 @@ FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
 	displacement = displacement * displacement * sign;
 	displacement *= isTessellating; // Disable displacement if is not tessellating
 	//displacement = ((displacement > 0) - (displacement < 0)) - displacement; // Creates cool canyons
+
+	float3 a = worldPos * _SimplexNoiseFrequency;
+	float3 b = (worldPos + float3(0, 0, 1234)) * _SimplexNoiseFrequency;
+	float3 c = (worldPos + float3(1234, 0, 0)) * _SimplexNoiseFrequency;
+	float3 vec = float3(noise3D(a.x, a.y, a.z), noise3D(b.x, b.y, b.z), noise3D(c.x, c.y, c.z));
+	displacement = noise3D(vec.x, vec.y, vec.z);
+	sign = ((displacement > 0) - (displacement < 0));
+	displacement = (displacement + displacement * displacement + displacement * displacement * displacement) / 3;
+
 	float3 normal = normalize(v.normal);
 	v.vertex.xyz += normal * displacement * _SimplexNoiseAmplitude;
 

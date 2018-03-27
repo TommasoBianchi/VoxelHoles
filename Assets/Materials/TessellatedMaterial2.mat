@@ -66,12 +66,12 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _SimplexNoiseAmplitude: 0
-    - _SimplexNoiseFrequency: 1
+    - _SimplexNoiseAmplitude: 0.7
+    - _SimplexNoiseFrequency: 0.2
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessellationEdgeLength: 0.1
+    - _TessellationEdgeLength: 0.01
     - _TessellationEnableDistance: 100
     - _UVSec: 0
     - _ZWrite: 1
