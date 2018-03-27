@@ -26,7 +26,7 @@
 			#pragma domain TessellationDomain
 			#pragma fragment TerrainFragment
 			
-			#include "Tessellation2.cginc"
+			#include "Tessellation.cginc"
 			#include "TerrainRendering.cginc"
 
 			ENDCG
