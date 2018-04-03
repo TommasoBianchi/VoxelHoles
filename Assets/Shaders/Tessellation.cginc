@@ -6,7 +6,7 @@
 #include "SimplexNoise.cginc"
 #include "UnityCG.cginc"
 
-#define MUTEX(val1, val2, condition) ((val1) * (condition)) + ((val2) * (1 - (condition)))
+#define MUX(val1, val2, condition) ((val1) * (condition)) + ((val2) * (1 - (condition)))
 
 float4 _MainTex_ST;
 
@@ -43,9 +43,9 @@ float TessellationEdgeFactor(TessellationControlPoint cp0, TessellationControlPo
 	float3 edgeCenter = (p0 + p1) * 0.5;
 	float viewDistance = distance(edgeCenter, _WorldSpaceCameraPos);
 	float edgeFactor = edgeLength / (_TessellationEdgeLength * viewDistance);
-	//edgeFactor = MUTEX(edgeFactor, 1, edgeFactor > 2); // Use to remove small stupid stretched tessellations
+	//edgeFactor = MUX(edgeFactor, 1, edgeFactor > 2); // Use to remove small stupid stretched tessellations
 
-	return MUTEX(edgeFactor, 1, viewDistance < _TessellationEnableDistance);
+	return MUX(edgeFactor, 1, viewDistance < _TessellationEnableDistance);
 }
 
 TessellationFactors PatchConstantFunction (InputPatch<TessellationControlPoint, 3> patch) {
@@ -57,6 +57,7 @@ TessellationFactors PatchConstantFunction (InputPatch<TessellationControlPoint, 
 	return f;
 }
 
+// TODO: find a way to recalculate normals after displacement
 FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
 	FragmentData o;
 

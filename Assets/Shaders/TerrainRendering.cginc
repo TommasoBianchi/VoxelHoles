@@ -8,6 +8,11 @@
 
 sampler2D _MainTex;
 
+sampler2D _PlainTexture;
+sampler2D _SlopeTexture;
+
+float3 CalculateAlbedo(FragmentData f);
+
 FragmentData TerrainVertex(VertexData v){
 	FragmentData f;
 	f.position = UnityObjectToClipPos(v.vertex);
@@ -22,7 +27,7 @@ float4 TerrainFragment(FragmentData f) : SV_Target {
 	float3 viewDirection = normalize(_WorldSpaceCameraPos - f.worldPosition);
 	float3 lightDirection = _WorldSpaceLightPos0.xyz;
 	float3 lightColor = _LightColor0.rgb;
-	float3 albedo = tex2D(_MainTex, f.uv).rgb;
+	float3 albedo = CalculateAlbedo(f);
 	float3 diffuse = albedo * lightColor * DotClamped(lightDirection, f.normal);	// Not needed anymore
 
 	UnityLight light;
@@ -40,6 +45,15 @@ float4 TerrainFragment(FragmentData f) : SV_Target {
 		f.normal, viewDirection,
 		light, indirectLight
 	);
+}
+
+float3 CalculateAlbedo(FragmentData f) {
+	float plainness = saturate(abs(f.normal.y));
+	float slopeness = 1 - plainness * plainness * plainness * plainness * plainness;
+	float3 plainAlbedo = tex2D(_PlainTexture, f.uv).rgb;
+	float3 slopeAlbedo = tex2D(_SlopeTexture, f.uv).rgb;
+	return  slopeness * slopeAlbedo + (1 - slopeness) * plainAlbedo;
+	return slopeness;
 }
 
 #endif
