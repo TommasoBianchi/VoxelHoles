@@ -57,32 +57,63 @@ TessellationFactors PatchConstantFunction (InputPatch<TessellationControlPoint, 
 	return f;
 }
 
-// TODO: find a way to recalculate normals after displacement
-FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
-	FragmentData o;
-
-	float3 worldPos = mul(unity_ObjectToWorld, v.vertex);
-	float displacement = noise3D(worldPos.x * _SimplexNoiseFrequency, worldPos.y * _SimplexNoiseFrequency, worldPos.z * _SimplexNoiseFrequency);
+float SampleSimplex(float3 worldPosition) {
+	// OLD WAY 
+	float displacement = noise3D(worldPosition.x * _SimplexNoiseFrequency, 
+								 worldPosition.y * _SimplexNoiseFrequency, 
+								 worldPosition.z * _SimplexNoiseFrequency);
 	float sign = ((displacement > 0) - (displacement < 0));
 	displacement = displacement * displacement * sign;
-	displacement *= isTessellating; // Disable displacement if is not tessellating
+	//displacement *= isTessellating; // Disable displacement if is not tessellating
 	//displacement = ((displacement > 0) - (displacement < 0)) - displacement; // Creates cool canyons
 
-	float3 a = worldPos * _SimplexNoiseFrequency;
-	float3 b = (worldPos + float3(0, 0, 1234)) * _SimplexNoiseFrequency;
-	float3 c = (worldPos + float3(1234, 0, 0)) * _SimplexNoiseFrequency;
+	// NEW WAY
+	float3 a = worldPosition * _SimplexNoiseFrequency;
+	float3 b = (worldPosition + float3(0, 0, 1234)) * _SimplexNoiseFrequency;
+	float3 c = (worldPosition + float3(1234, 0, 0)) * _SimplexNoiseFrequency;
 	float3 vec = float3(noise3D(a.x, a.y, a.z), noise3D(b.x, b.y, b.z), noise3D(c.x, c.y, c.z));
 	displacement = noise3D(vec.x, vec.y, vec.z);
 	sign = ((displacement > 0) - (displacement < 0));
 	displacement = (displacement + displacement * displacement + displacement * displacement * displacement) / 3;
 
-	float3 normal = normalize(v.normal);
-	v.vertex.xyz += normal * displacement * _SimplexNoiseAmplitude;
+	return displacement * _SimplexNoiseAmplitude;
+}
 
-	o.position = UnityObjectToClipPos(v.vertex);
-	o.worldPosition.xyz = worldPos;	
+float3 CalculateSimplexGradient(float3 vertexPosition, float3 worldPosition, float3 displacedVertexPosition, float3 normal){
+	float delta = 0.01;
+
+	float3 xPlus = worldPosition + float3(delta, 0, 0);
+	float3 displacedXPlus = vertexPosition + float3(delta, 0, 0) + normal * SampleSimplex(xPlus);
+	float3 xDeriv = (displacedXPlus - displacedVertexPosition) / delta;
+
+	float3 yPlus = worldPosition + float3(0, delta, 0);
+	float3 displacedYPlus = vertexPosition + float3(0, delta, 0) + normal * SampleSimplex(yPlus);
+	float3 yDeriv = (displacedYPlus - displacedVertexPosition) / delta;
+
+	float3 zPlus = worldPosition + float3(0, 0, delta);
+	float3 displacedZPlus = vertexPosition + float3(0, 0, delta) + normal * SampleSimplex(zPlus);
+	float3 zDeriv = (displacedZPlus - displacedVertexPosition) / delta;
+
+	return normalize(cross(xDeriv, zDeriv));
+}
+
+// TODO: find a way to recalculate normals after displacement
+FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
+	FragmentData o;
+
+	float3 worldPos = mul(unity_ObjectToWorld, v.vertex);
+	
+	float displacement = SampleSimplex(worldPos) * isTessellating;	
+
+	float3 normal = normalize(v.normal);
+	float3 displacedVertex = v.vertex.xyz + normal * displacement;
+
+	o.position = UnityObjectToClipPos(float4(displacedVertex, 1));
+	o.worldPosition.xyz = mul(unity_ObjectToWorld, float4(displacedVertex, 1));	
 	o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
-	o.normal = UnityObjectToWorldNormal(normal);	
+	//o.normal = MUX(CalculateSimplexGradient(v.vertex.xyz, worldPos, displacedVertex, normal), 
+	//			   UnityObjectToWorldNormal(normal), isTessellating);	
+	o.normal = UnityObjectToWorldNormal(normal);
 
 	return o;
 }
