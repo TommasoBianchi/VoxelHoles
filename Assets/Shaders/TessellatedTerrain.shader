@@ -27,7 +27,7 @@
 			#pragma vertex TessellationVertex
 			#pragma hull TessellationHull
 			#pragma domain TessellationDomain
-			#pragma geometry GeometryCalculateNormals
+			//#pragma geometry GeometryCalculateNormals
 			#pragma fragment TerrainFragment
 			
 			#include "Tessellation.cginc"

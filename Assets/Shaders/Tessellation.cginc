@@ -79,8 +79,16 @@ float SampleSimplex(float3 worldPosition) {
 	return displacement * _SimplexNoiseAmplitude;
 }
 
-float3 CalculateSimplexGradient(float3 vertexPosition, float3 worldPosition, float3 displacedVertexPosition, float3 normal){
+float3 CalculateSimplexGradient(float3 p) {
 	float delta = 0.01;
+	float partialX = (SampleSimplex(p + float3(delta, 0, 0)) - SampleSimplex(p)) / delta;
+	float partialY = (SampleSimplex(p + float3(0, delta, 0)) - SampleSimplex(p)) / delta;
+	float partialZ = (SampleSimplex(p + float3(0, 0, delta)) - SampleSimplex(p)) / delta;
+	return float3(partialX, partialY, partialZ);
+}
+
+float3 CalculateSimplexNormal(float3 vertexPosition, float3 worldPosition, float3 displacedVertexPosition, float3 normal, float displacement) {
+	/*float delta = 0.01;
 
 	float3 xPlus = worldPosition + float3(delta, 0, 0);
 	float3 displacedXPlus = vertexPosition + float3(delta, 0, 0) + normal * SampleSimplex(xPlus);
@@ -94,7 +102,12 @@ float3 CalculateSimplexGradient(float3 vertexPosition, float3 worldPosition, flo
 	float3 displacedZPlus = vertexPosition + float3(0, 0, delta) + normal * SampleSimplex(zPlus);
 	float3 zDeriv = (displacedZPlus - displacedVertexPosition) / delta;
 
-	return normalize(cross(xDeriv, zDeriv));
+	return normalize(cross(xDeriv, zDeriv));*/
+
+	float3 gradient = CalculateSimplexGradient(worldPosition);
+	float3 h = gradient - dot(dot(gradient, normal), normal);
+	float3 n = normal - displacement * h;
+	return normalize(n);
 }
 
 // TODO: find a way to recalculate normals after displacement
@@ -111,9 +124,9 @@ FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
 	o.position = UnityObjectToClipPos(float4(displacedVertex, 1));
 	o.worldPosition.xyz = mul(unity_ObjectToWorld, float4(displacedVertex, 1));	
 	o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
-	//o.normal = MUX(CalculateSimplexGradient(v.vertex.xyz, worldPos, displacedVertex, normal), 
-	//			   UnityObjectToWorldNormal(normal), isTessellating);	
-	o.normal = UnityObjectToWorldNormal(normal);
+	o.normal = MUX(CalculateSimplexNormal(v.vertex.xyz, worldPos, displacedVertex, normal, displacement), 
+				   UnityObjectToWorldNormal(normal), isTessellating);	
+	//o.normal = UnityObjectToWorldNormal(normal);
 
 	return o;
 }

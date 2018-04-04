@@ -53,7 +53,6 @@ float3 CalculateAlbedo(FragmentData f) {
 	float3 plainAlbedo = tex2D(_PlainTexture, f.uv).rgb;
 	float3 slopeAlbedo = tex2D(_SlopeTexture, f.uv).rgb;
 	return  slopeness * slopeAlbedo + (1 - slopeness) * plainAlbedo;
-	return slopeness;
 }
 
 #endif
