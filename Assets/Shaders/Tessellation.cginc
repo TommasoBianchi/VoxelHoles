@@ -42,7 +42,9 @@ float TessellationEdgeFactor(TessellationControlPoint cp0, TessellationControlPo
 
 	float3 edgeCenter = (p0 + p1) * 0.5;
 	float viewDistance = distance(edgeCenter, _WorldSpaceCameraPos);
-	float edgeFactor = edgeLength / (_TessellationEdgeLength * viewDistance);
+	float edgeFactor = MUX(edgeLength / (_TessellationEdgeLength * viewDistance), 
+						   edgeLength / _TessellationEdgeLength, 
+						   viewDistance > _TessellationEnableDistance / 20); // Useful to keep factors constant when the player is close enough
 	//edgeFactor = MUX(edgeFactor, 1, edgeFactor > 2); // Use to remove small stupid stretched tessellations
 
 	return MUX(edgeFactor, 1, viewDistance < _TessellationEnableDistance);
@@ -119,7 +121,7 @@ FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
 	float displacement = SampleSimplex(worldPos) * isTessellating;	
 
 	float3 normal = normalize(v.normal);
-	float3 displacedVertex = v.vertex.xyz + normal * displacement;
+	float3 displacedVertex = v.vertex.xyz + float3(0, 1, 0) /*normal*/ * displacement;
 
 	o.position = UnityObjectToClipPos(float4(displacedVertex, 1));
 	o.worldPosition.xyz = mul(unity_ObjectToWorld, float4(displacedVertex, 1));	

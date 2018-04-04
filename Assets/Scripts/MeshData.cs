@@ -100,6 +100,25 @@ public class MeshData
         ).normalized;
     }
 
+    // Code from https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
+    /*
+     * Not working
+     * 
+     * private Vector2 TriplanarUV(Vector3 worldPosition, Vector3 worldNormal)
+    {
+        Vector3 blending = new Vector3(Mathf.Abs(worldNormal.x), Mathf.Abs(worldNormal.y), Mathf.Abs(worldNormal.z));
+        blending = blending.normalized; // Force weights to sum to 1.0
+        float b = (blending.x + blending.y + blending.z);
+        blending = new Vector3(blending.x / b, blending.y / b, blending.z / b);
+
+        Vector2 xaxis = new Vector2(worldPosition.y, worldPosition.z);
+        Vector2 yaxis = new Vector2(worldPosition.x, worldPosition.z);
+        Vector2 zaxis = new Vector2(worldPosition.x, worldPosition.y);
+        // blend the results of the 3 planar projections.
+        Vector2 uv = xaxis * blending.x + xaxis * blending.y + zaxis * blending.z;
+        return uv;
+    }*/
+
     public Mesh ToMesh(bool recalculateNormals = false)
     {
         Mesh mesh = new Mesh();
