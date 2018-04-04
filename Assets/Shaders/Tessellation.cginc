@@ -125,7 +125,7 @@ FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
 
 	o.position = UnityObjectToClipPos(float4(displacedVertex, 1));
 	o.worldPosition.xyz = mul(unity_ObjectToWorld, float4(displacedVertex, 1));	
-	o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+	o.uv.xy = v.uv;//TRANSFORM_TEX(v.uv, _MainTex);
 	o.normal = MUX(CalculateSimplexNormal(v.vertex.xyz, worldPos, displacedVertex, normal, displacement), 
 				   UnityObjectToWorldNormal(normal), isTessellating);	
 	//o.normal = UnityObjectToWorldNormal(normal);

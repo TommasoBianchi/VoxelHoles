@@ -7,10 +7,12 @@
 		_SimplexNoiseFrequency ("Simplex Noise Frequency", Float) = 1
 		_SimplexNoiseAmplitude ("Simplex Noise Amplitude", Float) = 1
 
-		_MainTex ("Main Texture", 2D) = "white" {}
+		//_MainTex ("Main Texture", 2D) = "white" {}
 
 		_PlainTexture ("Plain Texture", 2D) = "white" {}
+		_PlainDetailTexture ("Plain Detail", 2D) = "white" {}
 		_SlopeTexture ("Slope Texture", 2D) = "white" {}
+		_SlopeDetailTexture ("Slope Texture", 2D) = "white" {}
 	}
 
 	SubShader {
