@@ -13,6 +13,10 @@
 		_PlainDetailTexture ("Plain Detail", 2D) = "white" {}
 		_SlopeTexture ("Slope Texture", 2D) = "white" {}
 		_SlopeDetailTexture ("Slope Texture", 2D) = "white" {}
+		
+		_SlopeAngleTreshold ("Slope Angle Treshold", Float) = 45
+		_MountainTransitionStartAltitude ("Mountain Transition Start Altitude", Float) = 10
+		_MountainTransitionEndAltitude ("Mountain Transition End Altitude", Float) = 20
 	}
 
 	SubShader {
@@ -29,11 +33,9 @@
 			#pragma vertex TessellationVertex
 			#pragma hull TessellationHull
 			#pragma domain TessellationDomain
-			//#pragma geometry GeometryCalculateNormals
 			#pragma fragment TerrainFragment
 			
 			#include "Tessellation.cginc"
-			#include "GeometryNormals.cginc"
 			#include "TerrainRendering.cginc"
 
 			ENDCG

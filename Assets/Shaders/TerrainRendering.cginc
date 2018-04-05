@@ -16,6 +16,10 @@ float4 _PlainDetailTexture_ST;
 float4 _SlopeTexture_ST;
 float4 _SlopeDetailTexture_ST;
 
+float _SlopeAngleTreshold;
+float _MountainTransitionStartAltitude;
+float _MountainTransitionEndAltitude;
+
 float3 CalculateAlbedo(FragmentData f);
 
 FragmentData TerrainVertex(VertexData v){
@@ -53,8 +57,12 @@ float4 TerrainFragment(FragmentData f) : SV_Target {
 }
 
 float3 CalculateAlbedo(FragmentData f) {
-	float plainness = saturate(abs(f.normal.y));
-	float slopeness = 1 - plainness * plainness * plainness * plainness * plainness;
+	// Parameters
+	float slopeness = saturate((acos(f.normal.y) / radians(180)) / radians(_SlopeAngleTreshold));
+
+	float altitude = (f.worldPosition.y - _MountainTransitionStartAltitude) / (_MountainTransitionEndAltitude - _MountainTransitionStartAltitude);
+	altitude = MUX(0, altitude, f.worldPosition.y < _MountainTransitionStartAltitude);
+	altitude = MUX(1, altitude, f.worldPosition.y > _MountainTransitionEndAltitude);
 
 	float2 plainUV = TRANSFORM_TEX(f.uv, _PlainTexture);
 	float2 plainDetailUV = TRANSFORM_TEX(f.uv, _PlainDetailTexture);
@@ -74,8 +82,11 @@ float3 CalculateAlbedo(FragmentData f) {
 	//t = (noise3D(f.worldPosition.x * freq, f.worldPosition.y * freq, f.worldPosition.z * freq) + 1) / 2;
 	slopeAlbedo = (slopeAlbedo + slopeDetailAlbedo) / 2;
 	//slopeAlbedo = t * slopeAlbedo + (1 - t) * slopeDetailAlbedo;
+	
+	float3 albedo = lerp(plainAlbedo, slopeAlbedo, slopeness);
+	albedo = lerp(albedo, slopeAlbedo, altitude);
 
-	return  slopeness * slopeAlbedo + (1 - slopeness) * plainAlbedo;
+	return albedo;
 }
 
 #endif
