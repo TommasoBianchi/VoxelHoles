@@ -66,13 +66,21 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _PlainDetailTexture:
+        m_Texture: {fileID: 2800000, guid: 7a2289a9762413248a1b18dd303e90f7, type: 3}
+        m_Scale: {x: 0.4, y: 0.4}
+        m_Offset: {x: 0, y: 0}
     - _PlainTexture:
-        m_Texture: {fileID: 2800000, guid: 4fe59c4026f730046b7d85a7e311bff3, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 6885bb2b104ad7b4797531fd01623cfe, type: 3}
+        m_Scale: {x: 0.2, y: 0.2}
+        m_Offset: {x: 0, y: 0}
+    - _SlopeDetailTexture:
+        m_Texture: {fileID: 2800000, guid: f5bc6027bc1d70548b4b0719deca5642, type: 3}
+        m_Scale: {x: 0.2, y: 0.2}
         m_Offset: {x: 0, y: 0}
     - _SlopeTexture:
-        m_Texture: {fileID: 2800000, guid: f5bc6027bc1d70548b4b0719deca5642, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 053e6772bf9c4ef42a756b7243e71e28, type: 3}
+        m_Scale: {x: 0.1, y: 0.1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
@@ -85,11 +93,14 @@ Material:
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
+    - _MountainTransitionEndAltitude: 200
+    - _MountainTransitionStartAltitude: 100
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _ParallaxStrength: 0
     - _SimplexNoiseAmplitude: 5
     - _SimplexNoiseFrequency: 0.02
+    - _SlopeAngleTreshold: 5
     - _Smoothness: 0.1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
