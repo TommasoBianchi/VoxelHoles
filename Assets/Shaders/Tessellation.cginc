@@ -107,7 +107,7 @@ float3 CalculateSimplexNormal(float3 vertexPosition, float3 worldPosition, float
 	return normalize(cross(xDeriv, zDeriv));*/
 
 	float3 gradient = CalculateSimplexGradient(worldPosition);
-	float3 h = gradient - dot(dot(gradient, normal), normal);
+	float3 h = gradient - dot(gradient, normal) * normal;
 	float3 n = normal - displacement * h;
 	return normalize(n);
 }
