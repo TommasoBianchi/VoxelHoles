@@ -84,7 +84,7 @@ float3 CalculateSimplexNormal(float3 worldPosition, float3 normal, float displac
 	float3 gradient = CalculateSimplexGradient(worldPosition);
 	float3 h = gradient - dot(gradient, normal) * normal;
 	float3 n = normal - displacement * h;
-	return normalize(n);
+	return normalize(n);	// Is this is object space or in world space?
 }
 
 FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
@@ -95,7 +95,7 @@ FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
 	float displacement = SampleSimplex(worldPos) * isTessellating;	
 
 	float3 normal = normalize(v.normal);
-	float3 displacementNormal = float3(0, 1, 0);
+	float3 displacementNormal = normal;//float3(0, 1, 0);
 	float3 displacedVertex = v.vertex.xyz + displacementNormal * displacement;
 
 	o.position = UnityObjectToClipPos(float4(displacedVertex, 1));

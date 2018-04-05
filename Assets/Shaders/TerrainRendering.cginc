@@ -20,6 +20,7 @@ float _SlopeAngleTreshold;
 float _MountainTransitionStartAltitude;
 float _MountainTransitionEndAltitude;
 
+float3 TriplanarMappingAlbedo(FragmentData f);
 float3 CalculateAlbedo(FragmentData f);
 
 FragmentData TerrainVertex(VertexData v){
@@ -36,7 +37,7 @@ float4 TerrainFragment(FragmentData f) : SV_Target {
 	float3 viewDirection = normalize(_WorldSpaceCameraPos - f.worldPosition);
 	float3 lightDirection = _WorldSpaceLightPos0.xyz;
 	float3 lightColor = _LightColor0.rgb;
-	float3 albedo = CalculateAlbedo(f);
+	float3 albedo = TriplanarMappingAlbedo(f);//CalculateAlbedo(f);//
 	float3 diffuse = albedo * lightColor * DotClamped(lightDirection, f.normal);	// Not needed anymore
 
 	UnityLight light;
@@ -54,6 +55,37 @@ float4 TerrainFragment(FragmentData f) : SV_Target {
 		f.normal, viewDirection,
 		light, indirectLight
 	);
+}
+
+// Code from https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
+float3 TriplanarMappingAlbedo(FragmentData f){
+	float3 blending = abs(f.normal);
+	blending = normalize(max(blending, 0.00001)); // Force weights to sum to 1.0
+	float b = (blending.x + blending.y + blending.z);
+	blending /= b;
+
+	FragmentData temp1;
+	temp1.position = f.position;
+	temp1.worldPosition = f.worldPosition;
+	temp1.normal = f.normal;
+	/*FragmentData temp2;
+	temp2.position = f.position;
+	temp2.worldPosition = f.worldPosition;
+	temp2.normal = f.normal;
+	FragmentData temp3;
+	temp3.position = f.position;
+	temp3.worldPosition = f.worldPosition;
+	temp3.normal = f.normal;*/
+
+	temp1.uv.xy = f.worldPosition.yz;
+	float3 xaxis = CalculateAlbedo(temp1);
+	temp1.uv.xy = f.worldPosition.xz;
+	float3 yaxis = CalculateAlbedo(temp1);
+	temp1.uv.xy = f.worldPosition.xy;
+	float3 zaxis = CalculateAlbedo(temp1);
+	float3 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
+
+	return tex;
 }
 
 float3 CalculateAlbedo(FragmentData f) {
