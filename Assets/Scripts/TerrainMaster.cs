@@ -109,7 +109,8 @@ public class TerrainMaster : MonoBehaviour {
     {
         if (!terrainChunks.ContainsKey(center))
         {
-            terrainChunks.Add(center, new TerrainChunk(center, this));
+            TerrainChunk chunk = new TerrainChunk(center, this);
+            terrainChunks.Add(center, chunk);
         }
 
         TerrainChunk newChunk = terrainChunks[center];

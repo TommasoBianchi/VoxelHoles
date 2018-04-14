@@ -22,6 +22,7 @@ float _MountainTransitionEndAltitude;
 
 float3 TriplanarMappingAlbedo(FragmentData f);
 float3 CalculateAlbedo(FragmentData f);
+float4 ApplyFog(float4 color, float3 worldPosition);
 
 FragmentData TerrainVertex(VertexData v){
 	FragmentData f;
@@ -49,12 +50,14 @@ float4 TerrainFragment(FragmentData f) : SV_Target {
 	indirectLight.diffuse = max(0, ShadeSH9(float4(f.normal, 1)));	// Sperical armonics, used for ambient and skybox lighting
 	indirectLight.specular = 0;
 
-	return UNITY_BRDF_PBS(
+	float4 fragmentColor = UNITY_BRDF_PBS(
 		albedo, 0,
 		1, 0,
 		f.normal, viewDirection,
 		light, indirectLight
 	);
+
+	return ApplyFog(fragmentColor, f.worldPosition);
 }
 
 // Code from https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
@@ -119,6 +122,18 @@ float3 CalculateAlbedo(FragmentData f) {
 	albedo = lerp(albedo, slopeAlbedo, altitude);
 
 	return albedo;
+}
+
+float4 ApplyFog(float4 color, float3 worldPosition) {
+	#if defined(FOG_LINEAR) || defined(FOG_EXP) || defined(FOG_EXP2)
+		float viewDistance = length(_WorldSpaceCameraPos - worldPosition);
+		UNITY_CALC_FOG_FACTOR_RAW(viewDistance);
+		color.rgb = lerp(unity_FogColor.rgb, color.rgb, saturate(unityFogFactor));
+		color.a = 1 - saturate(unityFogFactor);
+		return color;
+	#else
+		return color;
+	#endif
 }
 
 #endif

@@ -1,8 +1,8 @@
 ﻿Shader "Custom/TessellatedTerrain" {
 
 	Properties {
-		_TessellationEdgeLength ("Tessellation Edge Length", Range(0.01, 10)) = 0.5
-		_TessellationEnableDistance ("Tessellation Enable Distance", Range(1, 1000)) = 50
+		_TessellationEdgeLength ("Tessellation Edge Length", Range(0.001, 10)) = 0.5
+		_TessellationEnableDistance ("Tessellation Enable Distance", Range(1, 10000)) = 50
 
 		_SimplexNoiseFrequency ("Simplex Noise Frequency", Float) = 1
 		_SimplexNoiseAmplitude ("Simplex Noise Amplitude", Float) = 1
@@ -34,6 +34,10 @@
 			#pragma hull TessellationHull
 			#pragma domain TessellationDomain
 			#pragma fragment TerrainFragment
+
+			#pragma multi_compile_fog
+
+			#define TESSELLATION_VIEW_DISTANCE_BASED
 			
 			#include "Tessellation.cginc"
 			#include "TerrainRendering.cginc"

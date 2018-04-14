@@ -41,21 +41,58 @@ float TessellationEdgeFactor(TessellationControlPoint cp0, TessellationControlPo
 	float edgeLength = distance(p0, p1);
 
 	float3 edgeCenter = (p0 + p1) * 0.5;
-	float viewDistance = distance(edgeCenter, _WorldSpaceCameraPos);
+	#ifdef TESSELLATION_VIEW_DISTANCE_BASED
+		// The math is useful to keep factors constant when the player is close enough
+		float viewDistance = max(50, distance(edgeCenter, _WorldSpaceCameraPos)) - 49;
+	#else
+		float viewDistance = 1;
+	#endif
+
+	//float maxFactor = edgeLength / _TessellationEdgeLength;
+	//float lamda = 0.03;
+	//float edgeFactor = maxFactor * exp(-lamda * viewDistance);
+	//edgeFactor = max(1, edgeFactor); // Edge factor should never go below zero
+
 	// Useful to keep factors constant when the player is close enough
-	float edgeFactor = MUX(edgeLength / (_TessellationEdgeLength * viewDistance), 
+	/*float edgeFactor = MUX(edgeLength / (_TessellationEdgeLength * viewDistance), 
 						   edgeLength / _TessellationEdgeLength, 
-						   viewDistance > _TessellationEnableDistance / 20);
+						   viewDistance > _TessellationEnableDistance / 20);*/
+	float edgeFactor = edgeLength / (_TessellationEdgeLength * viewDistance);
+	edgeFactor = MUX(edgeFactor, 1, edgeFactor >= 5);
+
+	return MUX(edgeFactor, 1, viewDistance < _TessellationEnableDistance);
+}
+
+float FixedTessellationEdgeFactor(TessellationControlPoint tcp) {
+	float3 p = mul(unity_ObjectToWorld, float4(tcp.vertex.xyz, 1)).xyz;
+	float viewDistance = max(50, distance(p, _WorldSpaceCameraPos)) - 49;
+
+	//float edgeFactor = 1 / (_TessellationEdgeLength * viewDistance);
+	//edgeFactor = MUX(edgeFactor, 1, edgeFactor >= 5);
+	// TODO: check why (viewDistance / _TessellationEnableDistance) seems to give results not in (0, 1)
+	float edgeFactor = lerp(1 / _TessellationEdgeLength, 1, viewDistance / _TessellationEnableDistance);
+	edgeFactor = MUX(edgeFactor, 1, edgeFactor >= 2);
 
 	return MUX(edgeFactor, 1, viewDistance < _TessellationEnableDistance);
 }
 
 TessellationFactors PatchConstantFunction (InputPatch<TessellationControlPoint, 3> patch) {
-	TessellationFactors f;
+	/*TessellationFactors f;
     f.edge[0] = TessellationEdgeFactor(patch[1], patch[2]);
     f.edge[1] = TessellationEdgeFactor(patch[2], patch[0]);
     f.edge[2] = TessellationEdgeFactor(patch[0], patch[1]);
 	f.inside = (f.edge[0] + f.edge[1] + f.edge[2]) * (1 / 3.0);
+	return f;*/
+
+	float f0 = FixedTessellationEdgeFactor(patch[0]);
+	float f1 = FixedTessellationEdgeFactor(patch[1]);
+	float f2 = FixedTessellationEdgeFactor(patch[2]);
+
+	TessellationFactors f;
+	f.edge[0] = (f1 + f2) / 2;
+	f.edge[1] = (f0 + f2) / 2;
+	f.edge[2] = (f0 + f1) / 2;
+	f.inside = (f0 + f1 + f2) / 3;
 	return f;
 }
 
@@ -67,6 +104,15 @@ float SampleSimplex(float3 worldPosition) {
 	float displacement = noise3D(vec.x, vec.y, vec.z);
 	float sign = ((displacement > 0) - (displacement < 0));
 	displacement = (displacement + displacement * displacement + displacement * displacement * displacement) / 3;
+
+	float viewDistance = distance(worldPosition, _WorldSpaceCameraPos);
+	//displacement *= MUX(1, exp(-0.5 * viewDistance), viewDistance < _TessellationEnableDistance / 1.5);
+	float t = (viewDistance / _TessellationEnableDistance - 0.5) * 2;
+	t = viewDistance / (float)_TessellationEnableDistance;
+	float amortizedDisplacement = (1 - t * t * t * t * t * t) * displacement;//lerp(displacement, 0, t);
+	displacement = MUX(displacement, 
+					   displacement / (1 + viewDistance - (_TessellationEnableDistance / 1.2)),
+					   viewDistance <= _TessellationEnableDistance / 1.2);
 
 	return displacement * _SimplexNoiseAmplitude;
 }
@@ -95,7 +141,7 @@ FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
 	float displacement = SampleSimplex(worldPos) * isTessellating;	
 
 	float3 normal = normalize(v.normal);
-	float3 displacementNormal = normal;//float3(0, 1, 0);
+	float3 displacementNormal = float3(0, 1, 0);//normal;//
 	float3 displacedVertex = v.vertex.xyz + displacementNormal * displacement;
 
 	o.position = UnityObjectToClipPos(float4(displacedVertex, 1));

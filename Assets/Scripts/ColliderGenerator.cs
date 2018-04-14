@@ -86,14 +86,29 @@ public class ColliderGenerator : MonoBehaviour {
         collider.transform.up = normal;
     }
 
+    //private float SimplexDisplacement(Vector3 contactPoint)
+    //{
+    //    float displacement = Simplex.Noise.CalcPixel3D(
+    //                                        contactPoint.x * TessellationSimplexNoiseFrequency,
+    //                                        contactPoint.y * TessellationSimplexNoiseFrequency,
+    //                                        contactPoint.z * TessellationSimplexNoiseFrequency);
+    //    float sign = Mathf.Sign(displacement);
+    //    displacement = displacement * displacement * sign;
+    //    return displacement;
+    //}
     private float SimplexDisplacement(Vector3 contactPoint)
     {
-        float displacement = Simplex.Noise.CalcPixel3D(
-                                            contactPoint.x * TessellationSimplexNoiseFrequency,
-                                            contactPoint.y * TessellationSimplexNoiseFrequency,
-                                            contactPoint.z * TessellationSimplexNoiseFrequency);
-        float sign = Mathf.Sign(displacement);
-        displacement = displacement * displacement * sign;
+        Vector3 a = contactPoint * TessellationSimplexNoiseFrequency;
+        Vector3 b = (contactPoint + new Vector3(0, 0, 1234)) * TessellationSimplexNoiseFrequency;
+        Vector3 c = (contactPoint + new Vector3(1234, 0, 0)) * TessellationSimplexNoiseFrequency;
+
+        Vector3 vec = new Vector3(Simplex.Noise.CalcPixel3D(a.x, a.y, a.z),
+                                  Simplex.Noise.CalcPixel3D(b.x, b.y, b.z),
+                                  Simplex.Noise.CalcPixel3D(c.x, c.y, c.z));
+
+        float displacement = Simplex.Noise.CalcPixel3D(vec.x, vec.y, vec.z);
+        displacement = (displacement + displacement * displacement + displacement * displacement * displacement) / 3;
+
         return displacement;
     }
 }

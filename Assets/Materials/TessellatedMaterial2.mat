@@ -88,8 +88,8 @@ Material:
     - _MountainTransitionStartAltitude: 0.15
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _SimplexNoiseAmplitude: 1
-    - _SimplexNoiseFrequency: 0.1
+    - _SimplexNoiseAmplitude: 0.02
+    - _SimplexNoiseFrequency: 0.01
     - _SlopeAngleTreshold: 5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
