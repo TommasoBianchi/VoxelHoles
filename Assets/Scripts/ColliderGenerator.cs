@@ -54,14 +54,6 @@ public class ColliderGenerator : MonoBehaviour {
         {
             SetCollider(collider, hitInfo);
         }
-        //else if (Physics.Raycast(source.position + direction * distance, -direction, out hitInfo, distance, layerToRaycast) &&
-        //         Vector3.Angle(direction, hitInfo.normal) > 90)
-        //{
-        //    // Reverse raycast to avoid case in which the right collider position is into the mesh itself due to 
-        //    // tessellation displacement
-        //    Debug.Log(direction + " " + hitInfo.normal + " " + Vector3.Angle(direction, hitInfo.normal));
-        //    SetCollider(collider, hitInfo);
-        //}
         else
         {
             collider.SetActive(false);
@@ -77,7 +69,9 @@ public class ColliderGenerator : MonoBehaviour {
         if (useTessellationDisplacement)
         {
             float displacement = SimplexDisplacement(contactPoint);
-            contactPoint += displacement * normal * TessellationSimplexNoiseAmplitude;
+            normal = new Vector3(0, 1, 0); // Because this is the Vector we are using for displacement in the shader
+            contactPoint += displacement * normal;
+            normal = CalculateSimplexNormal(contactPoint, normal, displacement);
         }
 
         collider.SetActive(true);
@@ -86,16 +80,6 @@ public class ColliderGenerator : MonoBehaviour {
         collider.transform.up = normal;
     }
 
-    //private float SimplexDisplacement(Vector3 contactPoint)
-    //{
-    //    float displacement = Simplex.Noise.CalcPixel3D(
-    //                                        contactPoint.x * TessellationSimplexNoiseFrequency,
-    //                                        contactPoint.y * TessellationSimplexNoiseFrequency,
-    //                                        contactPoint.z * TessellationSimplexNoiseFrequency);
-    //    float sign = Mathf.Sign(displacement);
-    //    displacement = displacement * displacement * sign;
-    //    return displacement;
-    //}
     private float SimplexDisplacement(Vector3 contactPoint)
     {
         Vector3 a = contactPoint * TessellationSimplexNoiseFrequency;
@@ -109,6 +93,23 @@ public class ColliderGenerator : MonoBehaviour {
         float displacement = Simplex.Noise.CalcPixel3D(vec.x, vec.y, vec.z);
         displacement = (displacement + displacement * displacement + displacement * displacement * displacement) / 3;
 
-        return displacement;
+        return displacement * TessellationSimplexNoiseAmplitude;
+    }
+
+    Vector3 CalculateSimplexGradient(Vector3 p)
+    {
+        float delta = 0.01f;
+        float partialX = (SimplexDisplacement(p + new Vector3(delta, 0, 0)) - SimplexDisplacement(p)) / delta;
+        float partialY = (SimplexDisplacement(p + new Vector3(0, delta, 0)) - SimplexDisplacement(p)) / delta;
+        float partialZ = (SimplexDisplacement(p + new Vector3(0, 0, delta)) - SimplexDisplacement(p)) / delta;
+        return new Vector3(partialX, partialY, partialZ);
+    }
+    
+    Vector3 CalculateSimplexNormal(Vector3 worldPosition, Vector3 normal, float displacement)
+    {
+        Vector3 gradient = CalculateSimplexGradient(worldPosition);
+        Vector3 h = gradient - Vector3.Dot(gradient, normal) * normal;
+        Vector3 n = normal - displacement * h;
+        return n.normalized;   
     }
 }
