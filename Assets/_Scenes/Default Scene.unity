@@ -130,7 +130,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &504281213
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -308,7 +308,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &828548278
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -362,7 +362,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &907744278
 Transform:
   m_ObjectHideFlags: 0
@@ -1229,6 +1229,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2085479981}
   - component: {fileID: 2085479980}
+  - component: {fileID: 2085479982}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -1278,10 +1279,22 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2085479979}
-  m_LocalRotation: {x: -0.24771367, y: 0.24358857, z: -0.07585485, w: -0.93463826}
+  m_LocalRotation: {x: 0.36703807, y: -0.26146814, z: 0.108303644, w: 0.8861083}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 30, y: -28.841002, z: 361.397}
+  m_LocalEulerAnglesHint: {x: 45, y: -32.88, z: 0}
+--- !u!114 &2085479982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2085479979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efbc32b825971a64e8c39236bdb95a46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dayLengthInSeconds: 120
