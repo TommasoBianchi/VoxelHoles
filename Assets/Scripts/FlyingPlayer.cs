@@ -7,6 +7,8 @@ public class FlyingPlayer : MonoBehaviour {
     public float speed;
     public float mouseScollSpeed;
 
+    public System.Action UpdateAction { get { return Update; } }
+
 	void Update ()
     {
         Vector3 dir = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("UpDown"), Input.GetAxis("Vertical")).normalized;

@@ -13,8 +13,13 @@ public class WalkingPlayer : MonoBehaviour {
     private Camera eyesCamera;
     private bool isActive;
 
+    private FlyingPlayer flyingPlayer;
+    private System.Action updateAction;
+    private bool isFlying = false;
+
     void Start()
     {
+        updateAction = Move;
         eyesCamera = GetComponentInChildren<Camera>();
 
         isActive = false;
@@ -34,6 +39,17 @@ public class WalkingPlayer : MonoBehaviour {
 
     void Update()
     {
+        updateAction();
+
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            isFlying = !isFlying;
+            SwitchControls(isFlying);
+        }
+    } 
+
+    void Move()
+    {
         if (!isActive)
             return;
 
@@ -52,5 +68,26 @@ public class WalkingPlayer : MonoBehaviour {
         }
 
         eyesCamera.transform.Rotate(-Input.GetAxis("Mouse Y") * Time.deltaTime * rotationSpeed, 0, 0, Space.Self);
+    }
+
+    void SwitchControls(bool enableFlying)
+    {
+        if (enableFlying)
+        {
+            if(flyingPlayer == null)
+            {
+                flyingPlayer = gameObject.AddComponent<FlyingPlayer>();
+                flyingPlayer.enabled = false;
+                flyingPlayer.speed = speed;
+                flyingPlayer.mouseScollSpeed = rotationSpeed;
+            }
+            GetComponent<Rigidbody>().useGravity = false;
+            updateAction = flyingPlayer.UpdateAction;
+        }
+        else
+        {
+            GetComponent<Rigidbody>().useGravity = true;
+            updateAction = Move;
+        }
     }
 }
