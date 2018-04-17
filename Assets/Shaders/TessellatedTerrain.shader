@@ -10,9 +10,14 @@
 		//_MainTex ("Main Texture", 2D) = "white" {}
 
 		_PlainTexture ("Plain Texture", 2D) = "white" {}
+		[NoScaleOffset] _PlainNormalMap("Plain Normals", 2D) = "bump" {}
 		_PlainDetailTexture ("Plain Detail", 2D) = "white" {}
+		[NoScaleOffset] _PlainDetailNormalMap("Plain Detail Normals", 2D) = "bump" {}
 		_SlopeTexture ("Slope Texture", 2D) = "white" {}
+		[NoScaleOffset] _SlopeNormalMap("Slope Normals", 2D) = "bump" {}
 		_SlopeDetailTexture ("Slope Texture", 2D) = "white" {}
+		[NoScaleOffset] _SlopeDetailNormalMap("Slope Detail Normals", 2D) = "bump" {}
+		_NormalBumpScale ("Normals Bump", Float) = 1
 		
 		_SlopeAngleTreshold ("Slope Angle Treshold", Float) = 45
 		_MountainTransitionStartAltitude ("Mountain Transition Start Altitude", Float) = 10

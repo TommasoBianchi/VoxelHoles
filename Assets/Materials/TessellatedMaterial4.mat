@@ -6,9 +6,9 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: TessellatedMaterial2
+  m_Name: TessellatedMaterial4
   m_Shader: {fileID: 4800000, guid: 5a80de0c190c9f5429d2a20605e5423a, type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords: _GLOSSYREFLECTIONS_OFF _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -60,62 +60,57 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _PlainDetailTexture:
         m_Texture: {fileID: 2800000, guid: 7a2289a9762413248a1b18dd303e90f7, type: 3}
-        m_Scale: {x: 2, y: 2}
-        m_Offset: {x: 0.3, y: 0.7}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _PlainNormalMap:
-        m_Texture: {fileID: 2800000, guid: 9cd298795dfa8ab43b6b597897c23bfc, type: 3}
+        m_Texture: {fileID: 2800000, guid: b2733c89ec7224f4cb02f9feee500228, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _PlainTexture:
-        m_Texture: {fileID: 2800000, guid: 6885bb2b104ad7b4797531fd01623cfe, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7a2289a9762413248a1b18dd303e90f7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _PlainTexture2:
-        m_Texture: {fileID: 2800000, guid: 7a2289a9762413248a1b18dd303e90f7, type: 3}
-        m_Scale: {x: 150, y: 150}
-        m_Offset: {x: 0, y: 0}
     - _SlopeDetailNormalMap:
-        m_Texture: {fileID: 2800000, guid: 7bdf0aded19ded449ac5fe0dc6d76778, type: 3}
+        m_Texture: {fileID: 2800000, guid: 67c1288c65f9fb3419ec6d7e503787a7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SlopeDetailTexture:
-        m_Texture: {fileID: 2800000, guid: f5bc6027bc1d70548b4b0719deca5642, type: 3}
-        m_Scale: {x: 4, y: 4}
-        m_Offset: {x: 0.2, y: 0.8}
+        m_Texture: {fileID: 2800000, guid: 053e6772bf9c4ef42a756b7243e71e28, type: 3}
+        m_Scale: {x: 3, y: 3}
+        m_Offset: {x: 0, y: 0}
     - _SlopeNormalMap:
         m_Texture: {fileID: 2800000, guid: 67c1288c65f9fb3419ec6d7e503787a7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SlopeTexture:
         m_Texture: {fileID: 2800000, guid: 053e6772bf9c4ef42a756b7243e71e28, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 3, y: 3}
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _GlossMapScale: 1
-    - _Glossiness: 0.5
-    - _GlossyReflections: 1
+    - _GlossMapScale: 0
+    - _Glossiness: 0
+    - _GlossyReflections: 0
     - _Metallic: 0
     - _Mode: 0
-    - _MountainTransitionEndAltitude: 0.8
-    - _MountainTransitionStartAltitude: 0.15
-    - _NormalBumpScale: 1
+    - _MountainTransitionEndAltitude: 10
+    - _MountainTransitionStartAltitude: 2
+    - _NormalBumpScale: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _SimplexNoiseAmplitude: 2
+    - _SimplexNoiseAmplitude: 1
     - _SimplexNoiseFrequency: 0.1
-    - _SlopeAngleTreshold: 5
-    - _SmoothnessTextureChannel: 0
-    - _SpecularHighlights: 1
+    - _SlopeAngleTreshold: 2
+    - _SmoothnessTextureChannel: 1
+    - _SpecularHighlights: 0
     - _SrcBlend: 1
-    - _TessellationEdgeLength: 0.01
-    - _TessellationEnableDistance: 1
+    - _TessellationEdgeLength: 0.1
+    - _TessellationEnableDistance: 200
     - _UVSec: 0
     - _ZWrite: 1
-    - angleTreshold: 5
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

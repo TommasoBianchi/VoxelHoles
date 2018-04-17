@@ -20,6 +20,8 @@ public class WalkingPlayer : MonoBehaviour {
         isActive = false;
         GetComponent<Rigidbody>().useGravity = false;
         StartCoroutine(StartAfterDelay(activationDelay));
+
+        Cursor.visible = false;
     }
 
     IEnumerator StartAfterDelay(float delay)
