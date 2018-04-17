@@ -52,7 +52,7 @@ public class ColliderGenerator : MonoBehaviour {
         Vector3 sourcePos = source.position - 2 * Mathf.Abs(SimplexDisplacement(source.position)) * direction;
 		if (Physics.Raycast(sourcePos, direction, out hitInfo, distance, layerToRaycast))
         {
-            SetCollider(collider, hitInfo);
+            SetCollider(collider, hitInfo, direction);
         }
         else
         {
@@ -60,7 +60,7 @@ public class ColliderGenerator : MonoBehaviour {
         }
 	}
 
-    private void SetCollider(GameObject collider, RaycastHit hitInfo)
+    private void SetCollider(GameObject collider, RaycastHit hitInfo, Vector3 raycastDirection)
     {
         Vector3 contactPoint = hitInfo.point;
         Vector3 normal = hitInfo.normal;
@@ -77,7 +77,8 @@ public class ColliderGenerator : MonoBehaviour {
         collider.SetActive(true);
         collider.transform.position = contactPoint;
 
-        collider.transform.up = normal;
+        //collider.transform.up = normal;
+        collider.transform.up = -raycastDirection;
     }
 
     private float SimplexDisplacement(Vector3 contactPoint)

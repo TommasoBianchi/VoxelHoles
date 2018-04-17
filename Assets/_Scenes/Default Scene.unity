@@ -2041,3 +2041,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dayLengthInSeconds: 120
+  nightLengthInSeconds: 10

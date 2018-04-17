@@ -122,10 +122,10 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessellatedShadowsEdgeLength: 0.02
+    - _TessellatedShadowsEdgeLength: 0.05
     - _TessellatedShadowsEnableDistance: 50
-    - _TessellationEdgeLength: 0.02
-    - _TessellationEnableDistance: 200
+    - _TessellationEdgeLength: 0.05
+    - _TessellationEnableDistance: 100
     - _TessellationUniform: 1
     - _UVSec: 0
     - _WireframeSmoothing: 1

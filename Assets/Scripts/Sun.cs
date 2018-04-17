@@ -5,16 +5,22 @@ using UnityEngine;
 public class Sun : MonoBehaviour {
 
     public float dayLengthInSeconds;
+    public float nightLengthInSeconds;
 
-    private float rotationalSpeed;
+    private float dailyRotationalSpeed;
+    private float nightlyRotationalSpeed;
 
-	void Start ()
+    void Start ()
     {
-        rotationalSpeed = 360 / dayLengthInSeconds;
-	}
+        dailyRotationalSpeed = 180 / dayLengthInSeconds;
+        nightlyRotationalSpeed = 180 / nightLengthInSeconds;
+    }
 	
 	void Update ()
     {
-        transform.Rotate(rotationalSpeed * Time.deltaTime, 0, 0);
-	}
+        if(transform.rotation.eulerAngles.x >= 0 && transform.rotation.eulerAngles.x <= 180)
+            transform.Rotate(dailyRotationalSpeed * Time.deltaTime, 0, 0);
+        else
+            transform.Rotate(nightlyRotationalSpeed * Time.deltaTime, 0, 0);
+    }
 }
