@@ -1,6 +1,8 @@
 ﻿#if !defined(BASE_STRUCTS_INCLUDED)
 #define BASE_STRUCTS_INCLUDED
 
+#include "AutoLight.cginc"
+
 struct VertexData {
 	float4 vertex : POSITION;
 	float3 normal : NORMAL;
@@ -11,10 +13,12 @@ struct VertexData {
 };
 
 struct FragmentData {
-	float4 position : SV_POSITION;
+	float4 pos : SV_POSITION;
 	float4 uv : TEXCOORD0;
 	float3 normal : TEXCOORD1;
 	float3 worldPosition : TEXCOORD2;
+
+	SHADOW_COORDS(3)
 };
 
 #endif

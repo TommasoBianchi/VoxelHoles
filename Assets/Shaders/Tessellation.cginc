@@ -1,10 +1,14 @@
-﻿#if !defined(TESSELLATION_INCLUDED)
+﻿// Upgrade NOTE: replaced 'defined SHADOW_CAST_PASS' with 'defined (SHADOW_CAST_PASS)'
+// Upgrade NOTE: replaced 'defined SHADOW_RECEIVE_PASS' with 'defined (SHADOW_RECEIVE_PASS)'
+
+#if !defined(TESSELLATION_INCLUDED)
 #define TESSELLATION_INCLUDED
 
 #include "BaseStructs.cginc"
 #include "TessellationStructs.cginc"
 #include "SimplexNoise.cginc"
 #include "UnityCG.cginc"
+#include "AutoLight.cginc"
 
 #define MUX(val1, val2, condition) ((val1) * (condition)) + ((val2) * (1 - (condition)))
 
@@ -23,6 +27,7 @@ TessellationControlPoint TessellationVertex (VertexData v) {
 	t.uv = v.uv;
 	t.uv1 = v.uv1;
 	t.uv2 = v.uv2;
+
 	return t;
 }
 
@@ -144,13 +149,19 @@ FragmentData SimplexDisplacement (VertexData v, int isTessellating) {
 	float3 displacementNormal = float3(0, 1, 0);//normal;//
 	float3 displacedVertex = v.vertex.xyz + displacementNormal * displacement;
 
-	o.position = UnityObjectToClipPos(float4(displacedVertex, 1));
+	o.pos = UnityObjectToClipPos(float4(displacedVertex, 1));
 	o.worldPosition.xyz = mul(unity_ObjectToWorld, float4(displacedVertex, 1));	
 	o.uv.xy = v.uv;//TRANSFORM_TEX(v.uv, _MainTex);
 	o.normal = MUX(CalculateSimplexNormal(worldPos, displacementNormal, displacement), 
 				   UnityObjectToWorldNormal(normal), isTessellating);
 
-	return o;
+	#if defined (SHADOW_RECEIVE_PASS)
+		TRANSFER_SHADOW(o);
+		return o;
+	#elif defined (SHADOW_CAST_PASS)
+		v.vertex.xyz = displacedVertex;
+		return ShadowCasterVertex(v);
+	#endif
 }
 
 [UNITY_domain("tri")]

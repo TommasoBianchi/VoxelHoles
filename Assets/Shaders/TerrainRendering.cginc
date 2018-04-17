@@ -40,7 +40,7 @@ float4 ApplyFog(float4 color, float3 worldPosition);
 
 FragmentData TerrainVertex(VertexData v){
 	FragmentData f;
-	f.position = UnityObjectToClipPos(v.vertex);
+	f.pos = UnityObjectToClipPos(v.vertex);
 	f.worldPosition.xyz = mul(unity_ObjectToWorld, v.vertex);;	
 	f.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
 	f.normal = UnityObjectToWorldNormal(v.normal);	
@@ -58,7 +58,8 @@ float4 TerrainFragment(FragmentData f) : SV_Target {
 	f.normal = normalize(TriplanarMappingNormal(f, sp));
 
 	UnityLight light;
-	light.color = lightColor;
+	UNITY_LIGHT_ATTENUATION(lightAttenuation, f, f.worldPosition);
+	light.color = lightColor * lightAttenuation;
 	light.dir = lightDirection;
 	light.ndotl = DotClamped(f.normal, lightDirection);
 
@@ -98,7 +99,7 @@ float3 TriplanarMappingAlbedo(FragmentData f, SplatParameters sp){
 	blending /= b;
 
 	FragmentData temp;
-	temp.position = f.position;
+	temp.pos = f.pos;
 	temp.worldPosition = f.worldPosition;
 	temp.normal = f.normal;
 
@@ -141,7 +142,7 @@ float3 TriplanarMappingNormal(FragmentData f, SplatParameters sp) {
 	blending /= b;
 
 	FragmentData temp;
-	temp.position = f.position;
+	temp.pos = f.pos;
 	temp.worldPosition = f.worldPosition;
 	temp.normal = f.normal;
 

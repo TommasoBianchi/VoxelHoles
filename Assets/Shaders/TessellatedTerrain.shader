@@ -4,6 +4,9 @@
 		_TessellationEdgeLength ("Tessellation Edge Length", Range(0.001, 10)) = 0.5
 		_TessellationEnableDistance ("Tessellation Enable Distance", Range(1, 10000)) = 50
 
+		_TessellatedShadowsEdgeLength("Tessellated Shadows Edge Length", Range(0.001, 10)) = 0.5
+		_TessellatedShadowsEnableDistance("Tessellated Shadows Edge Distance", Range(1, 10000)) = 50
+
 		_SimplexNoiseFrequency ("Simplex Noise Frequency", Float) = 1
 		_SimplexNoiseAmplitude ("Simplex Noise Amplitude", Float) = 1
 
@@ -41,11 +44,38 @@
 			#pragma fragment TerrainFragment
 
 			#pragma multi_compile_fog
+			#pragma multi_compile _ SHADOWS_SCREEN
 
 			#define TESSELLATION_VIEW_DISTANCE_BASED
+			#define SHADOW_RECEIVE_PASS
 			
 			#include "Tessellation.cginc"
 			#include "TerrainRendering.cginc"
+
+			ENDCG
+		}
+
+		Pass {
+			Tags {
+				"LightMode" = "ShadowCaster"
+		}
+
+			CGPROGRAM
+
+			#pragma target 4.6
+
+			#pragma vertex TessellationVertex
+			#pragma hull TessellationHull
+			#pragma domain TessellationDomain
+			#pragma fragment ShadowCasterFragment
+
+			#define SHADOW_CAST_PASS
+
+			#define _TessellationEdgeLength _TessellatedShadowsEdgeLength
+			#define _TessellationEnableDistance _TessellatedShadowsEnableDistance
+
+			#include "Shadows.cginc"
+			#include "Tessellation.cginc"
 
 			ENDCG
 		}

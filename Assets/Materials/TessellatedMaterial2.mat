@@ -111,8 +111,10 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _TessellatedShadowsEdgeLength: 0.1
+    - _TessellatedShadowsEnableDistance: 20
     - _TessellationEdgeLength: 0.01
-    - _TessellationEnableDistance: 1
+    - _TessellationEnableDistance: 100
     - _UVSec: 0
     - _ZWrite: 1
     - angleTreshold: 5
